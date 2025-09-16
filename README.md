@@ -4,7 +4,18 @@
 
 # API E-commerce Gluten Free
 
-1. Levantar Base de datos Postgre
+1. Clonar proyecto
+2. Instalar dependencias
+```
+yarn install
+```
+3. Renombrar archivo .env.template y configurar variables de entorno
+5. Levantar Base de datos PostgreSQL
 ```
 docker-compose up -d
+```
+
+6. Levantar modo desarrollo
+```
+yarn start:dev
 ```
