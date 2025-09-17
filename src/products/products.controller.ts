@@ -24,7 +24,7 @@ export class ProductsController {
 
   @Get(':param')
   async findOne(@Param('param') param: string) {
-    return await this.productsService.findOne(param);
+    return await this.productsService.findOnePlain(param);
   }
 
   @Get('tags/:tag')
