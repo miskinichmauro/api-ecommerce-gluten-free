@@ -1,11 +1,29 @@
+import { existsSync } from 'fs';
+import { join } from 'path';
+import { ConfigService } from '@nestjs/config';
 import { BadRequestException, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class FilesService {
+  constructor(
+    private readonly configService: ConfigService
+  ) {}
+  findOne(fileName: string) {
+    const path = join(__dirname, '../../static/products', fileName);
+    
+    if (!existsSync(path)) {
+      throw new BadRequestException('No se encontró la imagen especificada');
+    }
+
+    return path;
+  }
+
   uploadFile(file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('Asegúrate de que el archivo sea una imagen valida');
     }
-    return { fileName: file.filename };
+
+    const secureUrl = `${this.configService.get('API_HOST')}/files/product/${file.filename}`;
+    return { secureUrl };
   }
 }
