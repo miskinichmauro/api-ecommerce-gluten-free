@@ -1,13 +1,13 @@
 import { BadRequestException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { Product } from './entities/product.entity';
 import { DataSource, Repository } from 'typeorm';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { validate as isUUId } from 'uuid';
+
+import { CreateProductDto, UpdateProductDto } from './dto';
 import { ProductImage } from './entities';
+import { Product } from './entities/product.entity';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class ProductsService {
@@ -23,11 +23,12 @@ export class ProductsService {
     private readonly dataSource: DataSource
   ) {}
 
-  async create(createProductDto: CreateProductDto) {
+  async create(createProductDto: CreateProductDto, user: User) {
     const { images = [], ...productDetails } = createProductDto;
     const newProduct = this.productRepository.create({
       ...productDetails,
-      images: images.map( url => this.productImageRepository.create({ url }))
+      images: images.map( url => this.productImageRepository.create({ url })),
+      user
     });
     await this.productRepository.save(newProduct);
     return { ...newProduct, images };
@@ -92,7 +93,7 @@ export class ProductsService {
     return products;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto, user: User) {
     const { images, ...toUpdate } = updateProductDto;
 
     const product = await this.productRepository.preload({ id,...toUpdate });
@@ -111,6 +112,7 @@ export class ProductsService {
         product.images = images.map(image => this.productImageRepository.create({ url: image }));
       }
 
+      product.user = user;
       await queryRunner.manager.save(product);
       await queryRunner.commitTransaction();
       await queryRunner.release();

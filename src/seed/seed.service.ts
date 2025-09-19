@@ -11,11 +11,11 @@ export class SeedService {
   async executeSeed() {
     await this.productsService.deleteAllProducts();
 
-    await Promise.all(
-      initialProducts.map(product =>
-        this.productsService.create(product),
-      ),
-    );
+    // await Promise.all(
+    //   initialProducts.map(product =>
+    //     this.productsService.create(product),
+    //   ),
+    // );
     return 'Seed Execute';
   }
 }
