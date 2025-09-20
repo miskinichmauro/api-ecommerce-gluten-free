@@ -3,14 +3,22 @@
 </p>
 
 # API E-commerce Gluten Free
+## Stack Utilizado
+- .Node.js v18+
+- yarn o npm
+- Docker Desktop
 
+## Pasos para utilizar el servicio en Desarrollo
 1. Clonar proyecto
 2. Instalar dependencias
 ```
 yarn install
 ```
-3. Renombrar archivo .env.template y configurar variables de entorno
-5. Levantar Base de datos PostgreSQL
+```
+npm install
+```
+3. Renombrar el archivo .env.template a .env y configurar variables de entorno. Obs: Solo si es necesario cambiar algún valor
+5. Levantar Base de datos PostgreSQL. Obs: Se debe tener Docker Desktop ejecutando
 ```
 docker-compose up -d
 ```
@@ -18,8 +26,17 @@ docker-compose up -d
 ```
 yarn start:dev
 ```
+```
+npm start:dev
+```
 
 7. Ejecutar SEED para cargar la base de datos
 ```
 http://localhost:3000/api/seed
 ```
+
+8. Abrir la documentation para conocer los endpoints disponibles
+```
+http://localhost:3000/api/swagger/index.html
+```
+

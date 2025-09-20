@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -56,8 +56,37 @@ export class AuthService {
       skip: offset
     });
   }
+  
+  async checkStatus(user: User) {
+    return { 
+      user,
+      access_token: this.getJwtToken({ id: user.id })
+    };
+  }
 
-  handleDbErrors(error:any) {
+  async findOne(param: string) {
+    const user = await this.userRepository.findOneBy({ email: param});
+
+    if (!user) {
+      throw new NotFoundException('No existe el usuario solicitado');
+    }
+
+    return user;
+  }
+
+  async deleteAllUsers() {
+    const query = this.userRepository.createQueryBuilder('user');
+    try {
+      return await query
+        .delete()
+        .where({})
+        .execute();
+    } catch (error) {
+      this.handleDbErrorExceptions(error);
+    }
+  }
+
+  handleDbErrorExceptions(error:any) {
     if (error.code === '23505')
       throw new BadRequestException(error.detail);
 
@@ -68,4 +97,5 @@ export class AuthService {
   private getJwtToken (payload: JwtPayload) {
     return this.jwtService.sign(payload);
   }
+
 }

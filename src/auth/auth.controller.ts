@@ -4,6 +4,8 @@ import { CreateUserDto, LoginUserDto } from './dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { Auth } from './decorators/auth.decorator';
 import { Role } from './enums/role.enum';
+import { GetUser } from './decorators';
+import { User } from './entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -14,7 +16,7 @@ export class AuthController {
     try {
      return await this.authService.create(createUserDto);
     } catch (error) {
-      this.authService.handleDbErrors(error);
+      this.authService.handleDbErrorExceptions(error);
     }
   }
 
@@ -27,5 +29,12 @@ export class AuthController {
   @Auth(Role.admin)
   async getAll(@Query() paginationDto: PaginationDto) {
     return await this.authService.getAll(paginationDto);
+  }
+
+  @Get('check-status')
+  @Auth()
+  checkStatus(
+    @GetUser() user: User) {
+      return this.authService.checkStatus(user);
   }
 }

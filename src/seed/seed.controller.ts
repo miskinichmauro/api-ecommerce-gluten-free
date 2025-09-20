@@ -8,7 +8,7 @@ export class SeedController {
   constructor(private readonly seedService: SeedService) {}
 
   @Post()
-  @Auth(Role.admin)
+  // @Auth(Role.admin)
   async executeSeed() {
     return await this.seedService.executeSeed();
   }

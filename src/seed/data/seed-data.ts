@@ -1,3 +1,4 @@
+import { CreateUserDto } from "src/auth/dto";
 import { CreateProductDto } from "src/products/dto/create-product.dto";
 
 export const initialProducts: CreateProductDto[] = [
@@ -182,3 +183,24 @@ export const initialProducts: CreateProductDto[] = [
     tags: ['pan', 'sarraceno', 'sin gluten'],
   }
 ];
+
+export const initialUsers: CreateUserDto[] = [
+  {
+    email: "admin-egf@gmail.com",
+    password: "Admin@123.",
+    fullName: "Administrador",
+    roles: ['admin']
+  },
+  {
+    email: "super-egf@gmail.com",
+    password: "Super@123.",
+    fullName: "Super usuario",
+    roles: ['super-user']
+  },
+  {
+    email: "user-egf@gmail.com",
+    password: "User@123.",
+    fullName: "SUsuario",
+    roles: ['user']
+  }
+]
