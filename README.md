@@ -13,8 +13,8 @@
 2. Instalar dependencias
 ```
 yarn install
-o
 ```
+o
 ```
 npm install
 ```
