@@ -13,6 +13,7 @@
 2. Instalar dependencias
 ```
 yarn install
+o
 ```
 ```
 npm install
@@ -26,8 +27,9 @@ docker-compose up -d
 ```
 yarn start:dev
 ```
+o
 ```
-npm start:dev
+npm run start:dev
 ```
 
 7. Ejecutar SEED para cargar la base de datos
