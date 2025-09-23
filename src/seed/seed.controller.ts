@@ -1,14 +1,15 @@
 import { Controller, Post } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 import { SeedService } from './seed.service';
-import { Role } from 'src/auth/enums/role.enum';
-import { Auth } from 'src/auth/decorators/auth.decorator';
 
 @Controller('seed')
 export class SeedController {
   constructor(private readonly seedService: SeedService) {}
 
   @Post()
-  // @Auth(Role.admin)
+  @ApiOperation({
+    summary: 'Recrea toda la base de datos'
+  })
   async executeSeed() {
     return await this.seedService.executeSeed();
   }

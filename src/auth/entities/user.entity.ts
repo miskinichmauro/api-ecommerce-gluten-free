@@ -1,5 +1,5 @@
+import { BeforeInsert, BeforeUpdate, Column, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Product } from "src/products/entities";
-import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('users')
 export class User {
@@ -24,17 +24,14 @@ export class User {
     fullName: string;
 
     @Column({
-        type: 'bool',
-        default: true
-    })
-    isActive: boolean;
-
-    @Column({
         type: 'text',
         array: true,
         default: ['user']
     })
     roles: string[];
+
+    @DeleteDateColumn()
+    deletedAt?: Date;
 
     @OneToMany(
         () => Product,

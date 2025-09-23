@@ -12,7 +12,7 @@ export class ProductImage {
 
     @ManyToOne(
         () => Product,
-        product => product.images,
+        product => product.imagesName,
         { 
             onDelete: 'CASCADE',
         }

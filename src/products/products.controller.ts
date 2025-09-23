@@ -5,6 +5,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { Auth, GetUser } from 'src/auth/decorators';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('products')
 @Auth()
@@ -12,6 +13,9 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
+  @ApiOperation({
+    summary: 'Permite añadir un nuevo producto'
+  })
   async create(
     @Body() createProductDto: CreateProductDto,
     @GetUser() user: User
@@ -24,25 +28,40 @@ export class ProductsController {
   }
 
   @Get()
+  @ApiOperation({
+    summary: 'Devuelve todos los productos existentes paginados'
+  })
   async findAll(@Query() paginationDto: PaginationDto) {
     return await this.productsService.findAll(paginationDto);
   }
 
   @Get(':param')
+  @ApiOperation({
+    summary: 'Devuelve un producto por Id o por Slug'
+  })
   async findOne(@Param('param') param: string) {
     return await this.productsService.findOnePlain(param);
   }
 
   @Get('tags/:tag')
-  async findByTags(@Param('tag') tag: string) {
+  @ApiOperation({
+    summary: 'Devuelve todos los productos por Tag paginado'
+  })
+  async findByTags(
+    @Param('tag') tag: string,
+    paginationDto: PaginationDto
+  ) {
     try {
-      return await this.productsService.findByTag(tag);
+      return await this.productsService.findByTag(tag, paginationDto);
     } catch (error) {
       this.productsService.handleException(error);
     }
   }
 
   @Patch(':id')
+  @ApiOperation({
+    summary: 'Permite actualizar un producto por Id'
+  })
   async update(
     @Param('id', ParseUUIDPipe) id: string, 
     @Body() updateProductDto: UpdateProductDto,
@@ -51,6 +70,9 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @ApiOperation({
+    summary: 'Inactiva un producto por Id'
+  })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.productsService.remove(id);
   }

@@ -8,6 +8,7 @@ import { ProductImage } from './entities';
 import { Product } from './entities/product.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { User } from 'src/auth/entities/user.entity';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class ProductsService {
@@ -20,18 +21,48 @@ export class ProductsService {
     @InjectRepository(ProductImage)
     private readonly productImageRepository: Repository<ProductImage>,
 
+    private readonly fileService: FilesService,
+
     private readonly dataSource: DataSource
   ) {}
 
   async create(createProductDto: CreateProductDto, user: User) {
-    const { images = [], ...productDetails } = createProductDto;
+    const { imagesName = [], ...productDetails } = createProductDto;
     const newProduct = this.productRepository.create({
       ...productDetails,
-      images: images.map( url => this.productImageRepository.create({ url })),
+      imagesName: imagesName.map(url => this.productImageRepository.create({url})),
       user
     });
+
+    if (newProduct.imagesName) {
+      this.validateImages(newProduct.imagesName);
+    }
+
     await this.productRepository.save(newProduct);
-    return { ...newProduct, images };
+    return { ...newProduct, imagesName };
+  }
+
+  private validateImages(images: ProductImage[]) {
+    let imagesDontExists: string[] = [];
+    images?.forEach(item => {
+      try {
+        this.fileService.findOne(item.url);
+      } catch (error) {
+        console.log(error);
+        if (error?.status === HttpStatus.NOT_FOUND) {
+          imagesDontExists.push(item.url);
+        } else {
+          throw error;
+        }
+      }
+    });
+
+    if (imagesDontExists.length > 0) {
+      throw new NotFoundException(
+        `No se pudo guardar el producto. Por favor, verifique que las imágenes estén correctamente cargadas: 
+        ${imagesDontExists.join(', ')}`
+      );
+    }
   }
 
   async findAll(paginationDto: PaginationDto) {
@@ -40,13 +71,13 @@ export class ProductsService {
       take: limit,
       skip: offset,
       relations: {
-        images: true
+        imagesName: true
       }
     });
 
     return products.map(product => ({
       ...product,
-      images: product.images?.map(image => image.url)
+      images: product.imagesName?.map(image => image.url)
     }))
   }
 
@@ -77,15 +108,20 @@ export class ProductsService {
 
     return {
       ...product,
-      images: product.images?.map(img => img.url)
+      images: product.imagesName?.map(img => img.url)
     }
   }
 
-  async findByTag(tag: string) {
+  async findByTag(
+    tag: string,
+    paginationDto: PaginationDto
+  ) {
     const queryBuilder = this.productRepository.createQueryBuilder('product');
     const products = await queryBuilder
       .where("LOWER(:tag) = ANY(tags)", { tag })
-        .leftJoinAndSelect('product.images', 'productImages')
+      .leftJoinAndSelect('product.images', 'productImages')
+      .limit(paginationDto.limit)
+      .offset(paginationDto.offset)
       .getMany();
 
     if (products.length == 0)
@@ -94,7 +130,7 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto, user: User) {
-    const { images, ...toUpdate } = updateProductDto;
+    const { imagesName, ...toUpdate } = updateProductDto;
 
     const product = await this.productRepository.preload({ id,...toUpdate });
 
@@ -107,9 +143,9 @@ export class ProductsService {
     await queryRunner.startTransaction();
 
     try {
-      if (images) {
+      if (imagesName) {
         await queryRunner.manager.delete(ProductImage, {product: { id }});
-        product.images = images.map(image => this.productImageRepository.create({ url: image }));
+        product.imagesName = imagesName.map(image => this.productImageRepository.create({ url: image }));
       }
 
       product.user = user;
@@ -125,7 +161,7 @@ export class ProductsService {
 
   async remove(id: string) {
     const product = await this.findOne(id);    
-    await this.productRepository.remove(product);
+    await this.productRepository.softRemove(product);
   }
 
   handleException(error: any) {

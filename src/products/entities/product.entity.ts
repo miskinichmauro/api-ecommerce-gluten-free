@@ -1,6 +1,7 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ProductImage } from "./producto-images.entity";
 import { User } from "src/auth/entities/user.entity";
+import { normalizeSlug } from "src/common/utils/util";
 
 @Entity({name: 'products'})
 export class Product {
@@ -44,6 +45,9 @@ export class Product {
     })
     tags: string[];
 
+    @DeleteDateColumn()
+    deleteAt: Date;
+
     @OneToMany(
         () => ProductImage,
         productImage => productImage.product,
@@ -52,7 +56,7 @@ export class Product {
             eager: true
         }
     )
-    images?: ProductImage[];
+    imagesName?: ProductImage[];
 
     @ManyToOne(
         () => User,
@@ -73,17 +77,11 @@ export class Product {
             this.slug = this.title
         }
 
-        this.slug = this.slug.trim()
-        .toLowerCase()
-        .replaceAll(' ', '_')
-        .replaceAll("'", '')
+        this.slug = normalizeSlug(this.slug.trim())
     }
 
     @BeforeUpdate()
     checkSlugUpdate() {
-        this.slug = this.slug.trim()
-        .toLowerCase()
-        .replaceAll(' ', '_')
-        .replaceAll("'", '')
+        this.slug = normalizeSlug(this.slug.trim())
     }
 }

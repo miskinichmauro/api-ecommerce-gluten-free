@@ -3,6 +3,8 @@ import { BadRequestException, Injectable, InternalServerErrorException, NotFound
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { validate as isUUId } from 'uuid';
+
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
@@ -65,13 +67,23 @@ export class AuthService {
   }
 
   async findOne(param: string) {
-    const user = await this.userRepository.findOneBy({ email: param});
+    let user: User | null;
+    if (isUUId(param)) {
+      user = await this.userRepository.findOneBy({ id: param});
+    } else {
+      user = await this.userRepository.findOneBy({ email: param});
+    }
 
     if (!user) {
       throw new NotFoundException('No existe el usuario solicitado');
     }
 
     return user;
+  }
+
+  async delete(id: string) {
+    const user = await this.findOne(id);
+    await this.userRepository.softRemove(user);
   }
 
   async deleteAllUsers() {

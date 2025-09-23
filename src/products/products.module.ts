@@ -5,13 +5,15 @@ import { ProductsController } from './products.controller';
 
 import { Product, ProductImage } from './entities/index';
 import { AuthModule } from 'src/auth/auth.module';
+import { FilesModule } from 'src/files/files.module';
 
 @Module({
   controllers: [ProductsController],
   providers: [ProductsService],
   imports: [
     TypeOrmModule.forFeature([Product, ProductImage]),
-    AuthModule
+    AuthModule,
+    FilesModule
   ],
   exports: [ProductsService]
 })

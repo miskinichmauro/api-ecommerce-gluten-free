@@ -200,7 +200,7 @@ export const initialUsers: CreateUserDto[] = [
   {
     email: "user-egf@gmail.com",
     password: "User@123.",
-    fullName: "SUsuario",
+    fullName: "Usuario",
     roles: ['user']
   }
 ]
