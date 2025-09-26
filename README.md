@@ -32,7 +32,7 @@ o
 npm run start:dev
 ```
 
-7. Ejecutar SEED para cargar la base de datos
+7. Ejecutar SEED para cargar la base de datos. Ten cuenta que debes pasar en el Header un ApiKey
 ```
 http://localhost:3000/api/seed
 ```

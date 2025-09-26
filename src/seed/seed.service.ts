@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { AuthService } from 'src/auth/auth.service';
@@ -14,11 +14,19 @@ export class SeedService {
     private readonly authService: AuthService
   ) { }
 
-  async executeSeed() {
-    const environment = this.configService.get<string>('NODE_ENV') ?? 'development';
-    if (environment !== 'development') {
-      throw new ForbiddenException('Endpoint ejecutable solo en ambiente de pruebas');
+  async executeSeed(apiKey: string) {
+    const apiKeyEnv = this.configService.get<string>('API_KEY');
+    if (!apiKeyEnv) {
+      throw new UnauthorizedException('Falta una variable necesaria (API_KEY) para la ejecución del SEED');
     }
+
+  if (!apiKey) {
+    throw new UnauthorizedException('Debe enviar una API Key en los headers');
+  }
+
+  if (apiKey !== apiKeyEnv) {
+    throw new ForbiddenException('API Key inválida o sin permisos para ejecutar este endpoint');
+  }
 
     await this.deleteTables();
 

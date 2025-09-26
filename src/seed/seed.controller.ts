@@ -1,4 +1,4 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Headers, Post } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { SeedService } from './seed.service';
 
@@ -10,7 +10,8 @@ export class SeedController {
   @ApiOperation({
     summary: 'Recrea toda la base de datos'
   })
-  async executeSeed() {
-    return await this.seedService.executeSeed();
+  async executeSeed(@Headers('ApiKey') apiKey: string
+  ) {
+    return await this.seedService.executeSeed(apiKey);
   }
 }

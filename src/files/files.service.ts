@@ -15,21 +15,17 @@ export class FilesService {
     }
 
     const url = `${this.configService.get('API_HOST')}/files/product/${file.filename}`;
-    const fileExists = this.findOne(file.filename);
-    if (fileExists) {
-      throw new BadRequestException(`Ya existe un archivo con el mismo nombre. Url: ${url}`);
-    }
-
     return { name: file.filename , url };
   }
 
   findOne(fileName: string) {
-    const path = join(__dirname, '../../static/products', fileName);
+    const uploadPath = join(process.cwd(), 'static/products', fileName);
+    console.log('findOne', uploadPath);
     
-    if (!existsSync(path)) {
+    if (!existsSync(uploadPath)) {
       throw new NotFoundException('No se encontró la imagen especificada');
     }
 
-    return path;
+    return uploadPath;
   }
 }
