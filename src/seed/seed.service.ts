@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { AuthService } from 'src/auth/auth.service';
@@ -8,38 +12,38 @@ import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class SeedService {
-  constructor (
+  constructor(
     private readonly configService: ConfigService,
     private readonly productsService: ProductsService,
-    private readonly authService: AuthService
-  ) { }
+    private readonly authService: AuthService,
+  ) {}
 
   async executeSeed(apiKey: string) {
     const apiKeyEnv = this.configService.get<string>('API_KEY');
     if (!apiKeyEnv) {
-      throw new UnauthorizedException('Falta una variable necesaria (API_KEY) para la ejecución del SEED');
+      throw new UnauthorizedException(
+        'Falta una variable necesaria (API_KEY) para la ejecución del SEED',
+      );
     }
 
-  if (!apiKey) {
-    throw new UnauthorizedException('Debe enviar una API Key en los headers');
-  }
+    if (!apiKey) {
+      throw new UnauthorizedException('Debe enviar una API Key en los headers');
+    }
 
-  if (apiKey !== apiKeyEnv) {
-    throw new ForbiddenException('API Key inválida o sin permisos para ejecutar este endpoint');
-  }
+    if (apiKey !== apiKeyEnv) {
+      throw new ForbiddenException(
+        'API Key inválida o sin permisos para ejecutar este endpoint',
+      );
+    }
 
     await this.deleteTables();
 
-    await Promise.all(
-      this.insertUsers()
-    );
-    
+    await Promise.all(this.insertUsers());
+
     const emailAdmin = initialUsers[0].email;
     const user = await this.authService.findOne(emailAdmin);
 
-    await Promise.all(
-      this.insertProducts(user)
-    );
+    await Promise.all(this.insertProducts(user));
 
     return 'Seed Execute';
   }
@@ -50,14 +54,12 @@ export class SeedService {
   }
 
   private insertProducts(user: User) {
-    return initialProducts.map(product =>
+    return initialProducts.map((product) =>
       this.productsService.create(product, user),
-    )
+    );
   }
 
   private insertUsers() {
-    return initialUsers.map(user => 
-      this.authService.create(user)
-    )
+    return initialUsers.map((user) => this.authService.create(user));
   }
 }

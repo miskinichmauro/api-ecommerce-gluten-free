@@ -1,4 +1,13 @@
-import { Controller, Post, Body, Get, Query, Delete, Param, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Query,
+  Delete,
+  Param,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 
 import { GetUser } from './decorators';
@@ -15,11 +24,11 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({
-    summary: 'Permite añadir un nuevo usuario'
+    summary: 'Permite añadir un nuevo usuario',
   })
   async create(@Body() createUserDto: CreateUserDto) {
     try {
-     return await this.authService.create(createUserDto);
+      return await this.authService.create(createUserDto);
     } catch (error) {
       this.authService.handleDbErrorExceptions(error);
     }
@@ -27,7 +36,7 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({
-    summary: 'Genera un token para el usuario'
+    summary: 'Genera un token para el usuario',
   })
   login(@Body() loginUserDto: LoginUserDto) {
     return this.authService.login(loginUserDto);
@@ -35,7 +44,7 @@ export class AuthController {
 
   @Get('users')
   @ApiOperation({
-    summary: 'Devuelve todos los usuarios paginado'
+    summary: 'Devuelve todos los usuarios paginado',
   })
   @Auth(Role.admin)
   async getAll(@Query() paginationDto: PaginationDto) {
@@ -44,7 +53,7 @@ export class AuthController {
 
   @Delete(':id')
   @ApiOperation({
-    summary: 'Inactiva un usuario por Id'
+    summary: 'Inactiva un usuario por Id',
   })
   @Auth(Role.admin)
   async delete(@Param('id', ParseUUIDPipe) id: string) {
@@ -53,11 +62,10 @@ export class AuthController {
 
   @Get('check-status')
   @ApiOperation({
-    summary: 'Regenera el token de un usuario'
+    summary: 'Regenera el token de un usuario',
   })
   @Auth()
-  checkStatus(
-    @GetUser() user: User) {
-      return this.authService.checkStatus(user);
+  checkStatus(@GetUser() user: User) {
+    return this.authService.checkStatus(user);
   }
 }

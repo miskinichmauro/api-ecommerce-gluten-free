@@ -6,15 +6,15 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.setGlobalPrefix('api')
+  app.setGlobalPrefix('api');
 
-  app.useGlobalPipes(  
+  app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, 
-      forbidNonWhitelisted: true, 
-    })
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
   );
-  
+
   const config = new DocumentBuilder()
     .setTitle('API E-commerce Gluten Free')
     .setVersion('1.0')

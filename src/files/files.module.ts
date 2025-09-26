@@ -8,6 +8,6 @@ import { CommonModule } from '../common/common.module';
   controllers: [FilesController],
   providers: [FilesService],
   imports: [CommonModule, ConfigModule],
-  exports: [FilesService]
+  exports: [FilesService],
 })
 export class FilesModule {}

@@ -8,12 +8,14 @@ import { FilesModule } from './files/files.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(),
+  imports: [
+    ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       ssl: process.env.NODE_ENV === 'production',
-      extra: process.env.NODE_ENV === 'production' 
-        ? { rejectUnauthorized: false}
-        : null,
+      extra:
+        process.env.NODE_ENV === 'production'
+          ? { rejectUnauthorized: false }
+          : null,
       type: 'postgres',
       host: process.env.DB_HOST,
       port: +process.env.DB_PORT!,
@@ -21,7 +23,7 @@ import { AuthModule } from './auth/auth.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       autoLoadEntities: true,
-      synchronize: true
+      synchronize: true,
     }),
     ProductsModule,
     CommonModule,

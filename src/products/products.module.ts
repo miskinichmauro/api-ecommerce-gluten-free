@@ -13,8 +13,8 @@ import { FilesModule } from 'src/files/files.module';
   imports: [
     TypeOrmModule.forFeature([Product, ProductImage]),
     AuthModule,
-    FilesModule
+    FilesModule,
   ],
-  exports: [ProductsService]
+  exports: [ProductsService],
 })
 export class ProductsModule {}

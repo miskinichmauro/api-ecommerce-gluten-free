@@ -13,7 +13,7 @@ import { CommonModule } from 'src/common/common.module';
   providers: [AuthService, JwtStrategy],
   imports: [
     TypeOrmModule.forFeature([User]),
-    PassportModule.register({ defaultStrategy: 'jwt'}),
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [CommonModule],
       inject: [],
@@ -21,12 +21,12 @@ import { CommonModule } from 'src/common/common.module';
         return {
           secret: process.env.JWT_SECRET,
           signOptions: {
-            expiresIn: process.env.JWT_EXPIRE
-          }
-        }
-      }
-    })
+            expiresIn: process.env.JWT_EXPIRE,
+          },
+        };
+      },
+    }),
   ],
-  exports: [AuthService, TypeOrmModule, JwtStrategy, PassportModule]
+  exports: [AuthService, TypeOrmModule, JwtStrategy, PassportModule],
 })
 export class AuthModule {}

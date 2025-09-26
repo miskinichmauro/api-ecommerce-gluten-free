@@ -1,5 +1,5 @@
-import { CreateUserDto } from "src/auth/dto";
-import { CreateProductDto } from "src/products/dto/create-product.dto";
+import { CreateUserDto } from 'src/auth/dto';
+import { CreateProductDto } from 'src/products/dto/create-product.dto';
 
 export const initialProducts: CreateProductDto[] = [
   {
@@ -60,7 +60,8 @@ export const initialProducts: CreateProductDto[] = [
     title: 'Pizza base sin gluten',
     price: 30000,
     unitOfMeasure: 'unidad',
-    description: 'Base de pizza lista para hornear, hecha con harina sin gluten.',
+    description:
+      'Base de pizza lista para hornear, hecha con harina sin gluten.',
     slug: 'pizza_base_sin_gluten',
     stock: 45,
     tags: ['pizza', 'base', 'sin gluten'],
@@ -123,7 +124,8 @@ export const initialProducts: CreateProductDto[] = [
     title: 'Muffin de banana sin gluten',
     price: 22000,
     unitOfMeasure: 'unidad',
-    description: 'Muffin casero elaborado con harina sin gluten y banana madura.',
+    description:
+      'Muffin casero elaborado con harina sin gluten y banana madura.',
     slug: 'muffin_banana_sin_gluten',
     stock: 40,
     tags: ['muffin', 'banana', 'sin gluten'],
@@ -181,26 +183,26 @@ export const initialProducts: CreateProductDto[] = [
     slug: 'pan_sarraceno_sin_gluten',
     stock: 50,
     tags: ['pan', 'sarraceno', 'sin gluten'],
-  }
+  },
 ];
 
 export const initialUsers: CreateUserDto[] = [
   {
-    email: "admin-egf@gmail.com",
-    password: "Admin@123.",
-    fullName: "Administrador",
-    roles: ['admin']
+    email: 'admin-egf@gmail.com',
+    password: 'Admin@123.',
+    fullName: 'Administrador',
+    roles: ['admin'],
   },
   {
-    email: "super-egf@gmail.com",
-    password: "Super@123.",
-    fullName: "Super usuario",
-    roles: ['super-user']
+    email: 'super-egf@gmail.com',
+    password: 'Super@123.',
+    fullName: 'Super usuario',
+    roles: ['super-user'],
   },
   {
-    email: "user-egf@gmail.com",
-    password: "User@123.",
-    fullName: "Usuario",
-    roles: ['user']
-  }
-]
+    email: 'user-egf@gmail.com',
+    password: 'User@123.',
+    fullName: 'Usuario',
+    roles: ['user'],
+  },
+];

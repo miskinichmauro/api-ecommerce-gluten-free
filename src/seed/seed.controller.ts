@@ -8,10 +8,9 @@ export class SeedController {
 
   @Post()
   @ApiOperation({
-    summary: 'Recrea toda la base de datos'
+    summary: 'Recrea toda la base de datos',
   })
-  async executeSeed(@Headers('ApiKey') apiKey: string
-  ) {
+  async executeSeed(@Headers('ApiKey') apiKey: string) {
     return await this.seedService.executeSeed(apiKey);
   }
 }

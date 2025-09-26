@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
@@ -11,17 +19,17 @@ export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
   @Post('product/upload')
-  @UseInterceptors(FileInterceptor('file',
-    {
+  @UseInterceptors(
+    FileInterceptor('file', {
       fileFilter: fileFilter,
-      storage: diskStorage({ 
+      storage: diskStorage({
         destination: './static/products',
         filename: fileNamer,
-      })
-    }
-  ))
+      }),
+    }),
+  )
   @ApiOperation({
-    summary: 'Carga un archivo en el servidor'
+    summary: 'Carga un archivo en el servidor',
   })
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     return this.filesService.uploadFile(file);
@@ -29,12 +37,9 @@ export class FilesController {
 
   @Get('product/:fileName')
   @ApiOperation({
-    summary: 'Devuelve un archivo por nombre'
+    summary: 'Devuelve un archivo por nombre',
   })
-  findOne(
-    @Res() res: Response,
-    @Param('fileName') fileName: string
-  ) {
+  findOne(@Res() res: Response, @Param('fileName') fileName: string) {
     const path = this.filesService.findOne(fileName);
     res.sendFile(path);
   }

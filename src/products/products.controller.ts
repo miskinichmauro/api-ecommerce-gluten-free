@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseUUIDPipe,
+  Query,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -9,19 +19,19 @@ import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('products')
 @Auth()
-export class ProductsController {  
+export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
   @ApiOperation({
-    summary: 'Permite añadir un nuevo producto'
+    summary: 'Permite añadir un nuevo producto',
   })
   async create(
     @Body() createProductDto: CreateProductDto,
-    @GetUser() user: User
+    @GetUser() user: User,
   ) {
     try {
-      return await this.productsService.create(createProductDto, user)
+      return await this.productsService.create(createProductDto, user);
     } catch (error) {
       this.productsService.handleException(error);
     }
@@ -29,7 +39,7 @@ export class ProductsController {
 
   @Get()
   @ApiOperation({
-    summary: 'Devuelve todos los productos existentes paginados'
+    summary: 'Devuelve todos los productos existentes paginados',
   })
   async findAll(@Query() paginationDto: PaginationDto) {
     return await this.productsService.findAll(paginationDto);
@@ -37,7 +47,7 @@ export class ProductsController {
 
   @Get(':param')
   @ApiOperation({
-    summary: 'Devuelve un producto por Id o por Slug'
+    summary: 'Devuelve un producto por Id o por Slug',
   })
   async findOne(@Param('param') param: string) {
     return await this.productsService.findOnePlain(param);
@@ -45,12 +55,9 @@ export class ProductsController {
 
   @Get('tags/:tag')
   @ApiOperation({
-    summary: 'Devuelve todos los productos por Tag paginado'
+    summary: 'Devuelve todos los productos por Tag paginado',
   })
-  async findByTags(
-    @Param('tag') tag: string,
-    paginationDto: PaginationDto
-  ) {
+  async findByTags(@Param('tag') tag: string, paginationDto: PaginationDto) {
     try {
       return await this.productsService.findByTag(tag, paginationDto);
     } catch (error) {
@@ -60,18 +67,19 @@ export class ProductsController {
 
   @Patch(':id')
   @ApiOperation({
-    summary: 'Permite actualizar un producto por Id'
+    summary: 'Permite actualizar un producto por Id',
   })
   async update(
-    @Param('id', ParseUUIDPipe) id: string, 
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateProductDto: UpdateProductDto,
-    @GetUser() user: User) {
+    @GetUser() user: User,
+  ) {
     return await this.productsService.update(id, updateProductDto, user);
   }
 
   @Delete(':id')
   @ApiOperation({
-    summary: 'Inactiva un producto por Id'
+    summary: 'Inactiva un producto por Id',
   })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.productsService.remove(id);
