@@ -11,7 +11,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { FilesService } from './files.service';
-import type { Response } from 'express';
+import type { Response, Express } from 'express';
 import { fileFilter, fileNamer } from './helpers';
 
 @Controller('files')

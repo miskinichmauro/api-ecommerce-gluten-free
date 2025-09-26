@@ -1,3 +1,4 @@
+import type { Express } from 'express';
 import { normalizeSlug } from 'src/common/utils/util';
 
 export const fileNamer = (

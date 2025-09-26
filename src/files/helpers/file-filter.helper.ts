@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import type { Express } from 'express';
 import { normalizeSlug } from 'src/common/utils/util';
 
 const validExtensions = ['png', 'jpeg', 'jpg', 'gif'];

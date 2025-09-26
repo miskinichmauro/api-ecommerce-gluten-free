@@ -1,6 +1,7 @@
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { ConfigService } from '@nestjs/config';
+import type { Express } from 'express';
 import {
   BadRequestException,
   Injectable,
