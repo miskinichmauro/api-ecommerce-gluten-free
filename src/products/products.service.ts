@@ -102,7 +102,7 @@ export class ProductsService {
           title: param,
           slug: param,
         })
-        .leftJoinAndSelect('product.images', 'productImages')
+        .leftJoinAndSelect('product.imagesName', 'productImages')
         .getOne();
     }
 
