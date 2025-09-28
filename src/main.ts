@@ -15,6 +15,23 @@ async function bootstrap() {
     }),
   );
 
+  const allowedOrigins = [
+    'https://miskinichmauro.github.io', 
+    'http://localhost:4200',
+  ];
+
+  app.enableCors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS no permitido'), false);
+      }
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
   const config = new DocumentBuilder()
     .setTitle('API E-commerce Gluten Free')
     .setVersion('1.0')

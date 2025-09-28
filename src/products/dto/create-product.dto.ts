@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsInt,
   IsNumber,
   IsOptional,
@@ -38,6 +39,10 @@ export class CreateProductDto {
   @IsArray()
   @IsOptional()
   tags?: string[];
+
+  @IsBoolean()
+  @IsOptional()
+  isFeatured?: boolean;
 
   @IsString({ each: true })
   @IsArray()

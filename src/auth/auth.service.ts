@@ -41,17 +41,15 @@ export class AuthService {
 
   async login(loginUserDto: LoginUserDto) {
     const user = await this.userRepository.findOne({
-      where: { email: loginUserDto.email },
-      select: { email: true, password: true, id: true },
+      where: { email: loginUserDto.email }
     });
 
     if (!user || !bcrypt.compareSync(loginUserDto.password, user.password))
       throw new UnauthorizedException('Las credenciales no son validas');
 
-    const { email, password } = user;
+    const { password, ...userWithoutPassword } = user;
     return {
-      email,
-      password,
+      user: userWithoutPassword,
       access_token: this.getJwtToken({ id: user.id }),
     };
   }
@@ -65,8 +63,9 @@ export class AuthService {
   }
 
   async checkStatus(user: User) {
+    const { password, ...userWithoutPassword } = user;
     return {
-      user,
+      user: userWithoutPassword,
       access_token: this.getJwtToken({ id: user.id }),
     };
   }

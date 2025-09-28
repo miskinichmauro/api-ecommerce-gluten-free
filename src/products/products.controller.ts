@@ -16,9 +16,10 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { Auth, GetUser } from 'src/auth/decorators';
 import { ApiOperation } from '@nestjs/swagger';
+import { GetAllProductsDto } from './dto/get-all-products';
 
 @Controller('products')
-@Auth()
+// @Auth()
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
@@ -41,8 +42,11 @@ export class ProductsController {
   @ApiOperation({
     summary: 'Devuelve todos los productos existentes paginados',
   })
-  async findAll(@Query() paginationDto: PaginationDto) {
-    return await this.productsService.findAll(paginationDto);
+  async findAll(
+    @Query() getAllProductsDto: GetAllProductsDto
+  ) {
+    const isFeatured = getAllProductsDto.isFeatured === 'true';
+    return await this.productsService.findAll(getAllProductsDto, isFeatured);
   }
 
   @Get(':param')

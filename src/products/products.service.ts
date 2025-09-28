@@ -74,9 +74,14 @@ export class ProductsService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
+  async findAll(paginationDto: PaginationDto, isFeatured?: boolean) {
     const { limit = 10, offset = 0 } = paginationDto;
-    const products = await this.productRepository.find({
+    
+    const where = isFeatured === true
+      ? { isFeatured: true } 
+      : {};
+    const [products, totalProducts] = await this.productRepository.findAndCount({
+      where,
       take: limit,
       skip: offset,
       relations: {
@@ -84,10 +89,14 @@ export class ProductsService {
       },
     });
 
-    return products.map((product) => ({
-      ...product,
-      images: product.imagesName?.map((image) => image.url),
-    }));
+    return {
+      count: totalProducts,
+      pages: Math.ceil(totalProducts / limit),
+      products: products.map((product) => ({
+        ...product,
+        imagesName: product.imagesName?.map((img) => img.url),
+      })),
+    };
   }
 
   async findOne(param: string) {
@@ -117,7 +126,7 @@ export class ProductsService {
 
     return {
       ...product,
-      images: product.imagesName?.map((img) => img.url),
+      imagesName: product.imagesName?.map((img) => img.url),
     };
   }
 

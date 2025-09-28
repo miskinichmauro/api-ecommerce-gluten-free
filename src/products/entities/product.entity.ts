@@ -54,6 +54,12 @@ export class Product {
   })
   tags: string[];
 
+  @Column({
+    type: 'bool',
+    default: false,
+  })
+  isFeatured: boolean;
+
   @DeleteDateColumn()
   deleteAt: Date;
 

@@ -10,6 +10,7 @@ export const initialProducts: CreateProductDto[] = [
     slug: 'pan_sin_gluten_arroz',
     stock: 50,
     tags: ['pan', 'sin gluten', 'arroz'],
+    isFeatured: true,
   },
   {
     title: 'Pan de mandioca sin gluten',
@@ -19,6 +20,7 @@ export const initialProducts: CreateProductDto[] = [
     slug: 'pan_mandioca_sin_gluten',
     stock: 40,
     tags: ['pan', 'mandioca', 'sin gluten'],
+    isFeatured: true,
   },
   {
     title: 'Galletas de maíz sin azúcar',
@@ -28,6 +30,7 @@ export const initialProducts: CreateProductDto[] = [
     slug: 'galletas_maiz_sin_azucar',
     stock: 70,
     tags: ['galletas', 'maíz', 'sin gluten'],
+    isFeatured: true,
   },
   {
     title: 'Harina de arroz',
@@ -37,6 +40,7 @@ export const initialProducts: CreateProductDto[] = [
     slug: 'harina_arroz',
     stock: 100,
     tags: ['harina', 'sin gluten', 'arroz'],
+    isFeatured: true,
   },
   {
     title: 'Harina de almendras',
@@ -46,6 +50,7 @@ export const initialProducts: CreateProductDto[] = [
     slug: 'harina_almendras',
     stock: 60,
     tags: ['harina', 'almendras', 'sin gluten'],
+    isFeatured: true,
   },
   {
     title: 'Tortillas de maíz sin gluten',
