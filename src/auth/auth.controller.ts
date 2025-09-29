@@ -7,6 +7,7 @@ import {
   Delete,
   Param,
   ParseUUIDPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 
@@ -35,6 +36,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @HttpCode(200)
   @ApiOperation({
     summary: 'Genera un token para el usuario',
   })
