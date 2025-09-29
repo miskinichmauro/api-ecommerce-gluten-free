@@ -33,8 +33,9 @@ export class AuthService {
     });
     await this.userRepository.save(user);
 
+    const { password: _ , ...userWithoutPassword } = user;
     return {
-      ...user,
+      user: userWithoutPassword,
       access_token: this.getJwtToken({ id: user.id }),
     };
   }
