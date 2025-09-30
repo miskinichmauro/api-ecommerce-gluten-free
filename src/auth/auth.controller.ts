@@ -9,7 +9,7 @@ import {
   ParseUUIDPipe,
   HttpCode,
 } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { GetUser } from './decorators';
 import { Auth } from './decorators/auth.decorator';

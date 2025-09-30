@@ -15,15 +15,17 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { Auth, GetUser } from 'src/auth/decorators';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GetAllProductsDto } from './dto/get-all-products';
+import { Role } from 'src/auth/enums/role.enum';
 
 @Controller('products')
-// @Auth()
+@ApiTags('Products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
+  @Auth(Role.admin)
   @ApiOperation({
     summary: 'Permite añadir un nuevo producto',
   })
@@ -42,9 +44,7 @@ export class ProductsController {
   @ApiOperation({
     summary: 'Devuelve todos los productos existentes paginados',
   })
-  async findAll(
-    @Query() getAllProductsDto: GetAllProductsDto
-  ) {
+  async findAll(@Query() getAllProductsDto: GetAllProductsDto) {
     const isFeatured = getAllProductsDto.isFeatured === 'true';
     return await this.productsService.findAll(getAllProductsDto, isFeatured);
   }
@@ -70,6 +70,7 @@ export class ProductsController {
   }
 
   @Patch(':id')
+  @Auth(Role.admin)
   @ApiOperation({
     summary: 'Permite actualizar un producto por Id',
   })
@@ -82,6 +83,7 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @Auth(Role.admin)
   @ApiOperation({
     summary: 'Inactiva un producto por Id',
   })

@@ -52,7 +52,7 @@ export class ProductsService {
   }
 
   private validateImages(images: ProductImage[]) {
-    let imagesDontExists: string[] = [];
+    const imagesDontExists: string[] = [];
     images?.forEach((item) => {
       try {
         this.fileService.findOne(item.url);
