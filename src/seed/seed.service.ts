@@ -7,8 +7,10 @@ import { ConfigService } from '@nestjs/config';
 
 import { AuthService } from 'src/auth/auth.service';
 import { ProductsService } from 'src/products/products.service';
-import { initialProducts, initialUsers } from './data/seed-data';
+import { initialContacts, initialProducts, initialRecipes, initialUsers } from './data/seed-data';
 import { User } from 'src/auth/entities/user.entity';
+import { ContactsService } from 'src/contacts/contacts.service';
+import { RecipesService } from 'src/recipes/recipes.service';
 
 @Injectable()
 export class SeedService {
@@ -16,6 +18,8 @@ export class SeedService {
     private readonly configService: ConfigService,
     private readonly productsService: ProductsService,
     private readonly authService: AuthService,
+    private readonly contactService: ContactsService,
+    private readonly recipeService: RecipesService
   ) {}
 
   async executeSeed(apiKey: string) {
@@ -43,14 +47,22 @@ export class SeedService {
     const emailAdmin = initialUsers[0].email;
     const user = await this.authService.findOne(emailAdmin);
 
-    await Promise.all(this.insertProducts(user));
+    await Promise.all([
+      this.insertProducts(user),
+      this.insertContacts(),
+      this.insertRecipes()
+    ]);
 
     return 'Seed Execute';
   }
 
   private async deleteTables() {
-    await this.productsService.deleteAllProducts();
-    await this.authService.deleteAllUsers();
+    await Promise.all([
+      this.productsService.deleteAllProducts(),
+      this.authService.deleteAllUsers(),
+      this.contactService.deleteAllContacts(),
+      this.recipeService.deleteAllRecipes(),
+    ]);
   }
 
   private insertProducts(user: User) {
@@ -62,4 +74,13 @@ export class SeedService {
   private insertUsers() {
     return initialUsers.map((user) => this.authService.create(user));
   }
+
+  private insertContacts() {
+    return initialContacts.map((contact) => this.contactService.create(contact));
+  }
+
+  private insertRecipes() {
+    return initialRecipes.map((recipe) => this.recipeService.create(recipe));
+  }
+
 }

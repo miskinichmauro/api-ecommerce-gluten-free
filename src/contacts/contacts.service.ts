@@ -37,4 +37,9 @@ export class ContactsService {
     const contact = await this.findOne(id);
     return await this.contactRepository.remove(contact);
   }
+
+  async deleteAllContacts() {
+    const query = this.contactRepository.createQueryBuilder('contact');
+    return await query.delete().where({}).execute();
+  }
 }
