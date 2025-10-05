@@ -1,24 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, OneToMany, ManyToOne, Column } from 'typeorm';
-import { CartItem } from './cart-item.entity';
-import { User } from 'src/auth/entities/user.entity';
+import { IsUUID, IsInt, Min } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
-@Entity('carts')
-export class Cart {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class CreateCartItemDto {
+  @ApiProperty({ example: 'uuid-del-producto' })
+  @IsUUID()
+  productId: string;
 
-  @ManyToOne(() => User, (user) => user.carts, { eager: true })
-  user: User;
-
-  @OneToMany(() => CartItem, (item) => item.cart, {
-    cascade: true,
-    eager: true,
-  })
-  items: CartItem[];
-
-  @Column({ default: false })
-  isCheckedOut: boolean;
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updatedAt: Date;
+  @ApiProperty({ example: 2 })
+  @IsInt()
+  @Min(1)
+  quantity: number;
 }
