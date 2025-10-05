@@ -9,7 +9,7 @@ import { User } from 'src/auth/entities/user.entity';
 import { Product } from 'src/products/entities/product.entity';
 
 @Injectable()
-export class CartService {
+export class CartsService {
   constructor(
     @InjectRepository(Cart)
     private readonly cartRepository: Repository<Cart>,
