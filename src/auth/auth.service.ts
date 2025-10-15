@@ -1,21 +1,13 @@
 import { Repository } from 'typeorm';
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { validate as isUUId } from 'uuid';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto';
 import { User } from './entities/user.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class AuthService {
@@ -55,15 +47,7 @@ export class AuthService {
     };
   }
 
-  async getAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0 } = paginationDto;
-    return await this.userRepository.find({
-      take: limit,
-      skip: offset,
-    });
-  }
-
-  async checkStatus(user: User) {
+  checkStatus(user: User) {
     const { password, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
@@ -71,33 +55,8 @@ export class AuthService {
     };
   }
 
-  async findOne(param: string) {
-    let user: User | null;
-    if (isUUId(param)) {
-      user = await this.userRepository.findOneBy({ id: param });
-    } else {
-      user = await this.userRepository.findOneBy({ email: param });
-    }
-
-    if (!user) {
-      throw new NotFoundException('No existe el usuario solicitado');
-    }
-
-    return user;
-  }
-
-  async delete(id: string) {
-    const user = await this.findOne(id);
-    await this.userRepository.softRemove(user);
-  }
-
-  async deleteAllUsers() {
-    const query = this.userRepository.createQueryBuilder('user');
-    try {
-      return await query.delete().where({}).execute();
-    } catch (error) {
-      this.handleDbErrorExceptions(error);
-    }
+  private getJwtToken(payload: JwtPayload) {
+    return this.jwtService.sign(payload);
   }
 
   handleDbErrorExceptions(error: any) {
@@ -107,9 +66,5 @@ export class AuthService {
     throw new InternalServerErrorException(
       'Ocurrió un error inesperado. Por favor, verifica los logs.',
     );
-  }
-
-  private getJwtToken(payload: JwtPayload) {
-    return this.jwtService.sign(payload);
   }
 }

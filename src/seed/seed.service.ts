@@ -11,6 +11,7 @@ import { initialContacts, initialProducts, initialRecipes, initialUsers } from '
 import { User } from 'src/auth/entities/user.entity';
 import { ContactsService } from 'src/contacts/contacts.service';
 import { RecipesService } from 'src/recipes/recipes.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class SeedService {
@@ -18,6 +19,7 @@ export class SeedService {
     private readonly configService: ConfigService,
     private readonly productsService: ProductsService,
     private readonly authService: AuthService,
+    private readonly userService: UsersService,
     private readonly contactService: ContactsService,
     private readonly recipeService: RecipesService
   ) {}
@@ -45,7 +47,7 @@ export class SeedService {
     await Promise.all(this.insertUsers());
 
     const emailAdmin = initialUsers[0].email;
-    const user = await this.authService.findOne(emailAdmin);
+    const user = await this.userService.findOne(emailAdmin);
 
     await Promise.all([
       this.insertProducts(user),
@@ -59,7 +61,7 @@ export class SeedService {
   private async deleteTables() {
     await Promise.all([
       this.productsService.deleteAllProducts(),
-      this.authService.deleteAllUsers(),
+      this.userService.deleteAllUsers(),
       this.contactService.deleteAllContacts(),
       this.recipeService.deleteAllRecipes(),
     ]);

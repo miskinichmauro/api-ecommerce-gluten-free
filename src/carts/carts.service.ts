@@ -3,10 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cart } from './entities/cart.entity';
 import { CartItem } from './entities/cart-item.entity';
-import { CreateCartItemDto } from './dto/create-cart-item.dto';
-import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { Product } from 'src/products/entities/product.entity';
+import { CreateCartItemDto } from './dtos/create-cart-item.dto';
+import { UpdateCartItemDto } from './dtos/update-card-item.dto';
 
 @Injectable()
 export class CartsService {

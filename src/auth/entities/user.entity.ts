@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Product } from 'src/products/entities';
+import { Cart } from 'src/carts/entities/cart.entity';
 
 @Entity('users')
 export class User {
@@ -42,6 +43,9 @@ export class User {
 
   @OneToMany(() => Product, (product) => product.user)
   product: Product;
+
+  @OneToMany(() => Cart, (cart) => cart.user)
+  carts: Cart;
 
   @BeforeInsert()
   @BeforeUpdate()

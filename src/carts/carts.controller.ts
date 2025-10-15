@@ -1,16 +1,16 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param } from '@nestjs/common';
-import { CartService } from './cart.service';
-import { CreateCartItemDto } from './dto/create-cart-item.dto';
-import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { Auth, GetUser } from 'src/auth/decorators';
 import { User } from 'src/auth/entities/user.entity';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { CartsService } from './carts.service';
+import { CreateCartItemDto } from './dtos/create-cart-item.dto';
+import { UpdateCartItemDto } from './dtos/update-card-item.dto';
 
 @ApiTags('Cart')
 @Controller('cart')
 @Auth()
 export class CartsController {
-  constructor(private readonly cartService: CartService) {}
+  constructor(private readonly cartService: CartsService) {}
 
   @Get()
   @ApiOperation({ summary: 'Obtiene el carrito actual del usuario autenticado' })

@@ -6,6 +6,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ContactsModule } from 'src/contacts/contacts.module';
 import { RecipesModule } from 'src/recipes/recipes.module';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   controllers: [SeedController],
@@ -14,7 +15,9 @@ import { RecipesModule } from 'src/recipes/recipes.module';
     ConfigModule, 
     ProductsModule, 
     AuthModule, 
+    UsersModule, 
     ContactsModule, 
-    RecipesModule],
+    RecipesModule]
+  ,
 })
 export class SeedModule {}
