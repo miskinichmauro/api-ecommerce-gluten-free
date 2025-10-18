@@ -3,10 +3,11 @@ import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { Auth } from 'src/auth/decorators';
-import { Role } from 'src/auth/enums/role.enum';
+import { Roles } from 'src/auth/enums/role.enum';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('users')
+@Auth(Roles.admin)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   
@@ -14,7 +15,6 @@ export class UsersController {
   @ApiOperation({
     summary: 'Devuelve todos los usuarios paginado',
   })
-  @Auth(Role.admin)
   findAll(@Query() paginationDto: PaginationDto) {
     return this.usersService.findAll(paginationDto);
   }
@@ -23,7 +23,6 @@ export class UsersController {
   @ApiOperation({
     summary: 'Devuelve un usuario por id',
   })
-  @Auth(Role.admin)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
@@ -32,7 +31,6 @@ export class UsersController {
   @ApiOperation({
     summary: 'Actualiza un usuario',
   })
-  @Auth(Role.admin)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
@@ -41,7 +39,6 @@ export class UsersController {
   @ApiOperation({
     summary: 'Inactiva un usuario por Id',
   })
-  @Auth(Role.admin)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }

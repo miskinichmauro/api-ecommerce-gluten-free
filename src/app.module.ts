@@ -10,6 +10,7 @@ import { ContactsModule } from './contacts/contacts.module';
 import { RecipesModule } from './recipes/recipes.module';
 import { CartsModule } from './carts/carts.module';
 import { UsersModule } from './users/users.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { UsersModule } from './users/users.module';
     RecipesModule,
     CartsModule,
     UsersModule,
+    RolesModule,
   ],
   providers: [],
 })

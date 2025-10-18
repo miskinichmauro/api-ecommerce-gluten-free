@@ -17,7 +17,7 @@ import { User } from 'src/auth/entities/user.entity';
 import { Auth, GetUser } from 'src/auth/decorators';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GetAllProductsDto } from './dto/get-all-products';
-import { Role } from 'src/auth/enums/role.enum';
+import { Roles } from 'src/auth/enums/role.enum';
 
 @Controller('products')
 @ApiTags('Products')
@@ -25,7 +25,7 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  @Auth(Role.admin)
+  @Auth(Roles.admin)
   @ApiOperation({
     summary: 'Permite añadir un nuevo producto',
   })
@@ -70,7 +70,7 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  @Auth(Role.admin)
+  @Auth(Roles.admin)
   @ApiOperation({
     summary: 'Permite actualizar un producto por Id',
   })
@@ -83,7 +83,7 @@ export class ProductsController {
   }
 
   @Delete(':id')
-  @Auth(Role.admin)
+  @Auth(Roles.admin)
   @ApiOperation({
     summary: 'Inactiva un producto por Id',
   })
