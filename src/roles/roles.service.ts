@@ -29,7 +29,7 @@ export class RolesService {
   }
 
   async update(id: string, updateRoleDto: UpdateRoleDto) {
-    const role = this.roleRepository.create(updateRoleDto);
+    const role = await this.findOne(id);
     Object.assign(role, updateRoleDto);
     return await this.roleRepository.save(role);
   }
