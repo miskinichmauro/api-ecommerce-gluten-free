@@ -7,7 +7,7 @@ import { Roles as Role } from 'src/auth/enums/role.enum';
 import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('roles')
-@Auth(Role.admin)
+@Auth(Role.Admin)
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 

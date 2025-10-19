@@ -25,7 +25,7 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Post()
-  @Auth(Roles.admin)
+  @Auth(Roles.Admin)
   @ApiOperation({
     summary: 'Permite añadir un nuevo producto',
   })
@@ -70,7 +70,7 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  @Auth(Roles.admin)
+  @Auth(Roles.Admin)
   @ApiOperation({
     summary: 'Permite actualizar un producto por Id',
   })
@@ -83,7 +83,7 @@ export class ProductsController {
   }
 
   @Delete(':id')
-  @Auth(Roles.admin)
+  @Auth(Roles.Admin)
   @ApiOperation({
     summary: 'Inactiva un producto por Id',
   })

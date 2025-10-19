@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ContactsModule } from 'src/contacts/contacts.module';
 import { RecipesModule } from 'src/recipes/recipes.module';
 import { UsersModule } from 'src/users/users.module';
+import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
   controllers: [SeedController],
@@ -17,7 +18,8 @@ import { UsersModule } from 'src/users/users.module';
     AuthModule, 
     UsersModule, 
     ContactsModule, 
-    RecipesModule]
-  ,
+    RecipesModule,
+    RolesModule,
+  ],
 })
 export class SeedModule {}

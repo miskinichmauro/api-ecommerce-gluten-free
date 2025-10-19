@@ -47,7 +47,7 @@ export class UsersService {
     await this.userRepository.softRemove(user);
   }
   
-  async deleteAllUsers() {
+  async removeAll() {
     const query = this.userRepository.createQueryBuilder('user');
     try {
       return await query.delete().where({}).execute();

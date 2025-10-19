@@ -7,7 +7,7 @@ import { Roles } from 'src/auth/enums/role.enum';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('users')
-@Auth(Roles.admin)
+@Auth(Roles.Admin)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
   

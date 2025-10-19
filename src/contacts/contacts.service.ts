@@ -38,7 +38,7 @@ export class ContactsService {
     return await this.contactRepository.remove(contact);
   }
 
-  async deleteAllContacts() {
+  async removeAll() {
     const query = this.contactRepository.createQueryBuilder('contact');
     return await query.delete().where({}).execute();
   }

@@ -38,7 +38,7 @@ export class RecipesService {
     return await this.recipeRepository.remove(recipe);
   }
 
-  async deleteAllRecipes() {
+  async removeAll() {
     const query = this.recipeRepository.createQueryBuilder('recipe');
     return await query.delete().where({}).execute();
   }

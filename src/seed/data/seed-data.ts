@@ -2,6 +2,7 @@ import { CreateUserDto } from 'src/auth/dto';
 import { CreateContactDto } from 'src/contacts/dto/create-contact.dto';
 import { CreateProductDto } from 'src/products/dto/create-product.dto';
 import { CreateRecipeDto } from 'src/recipes/dto/create-recipe.dto';
+import { CreateRoleDto } from 'src/roles/dto/create-role.dto';
 
 export const initialProducts: CreateProductDto[] = [
   {
@@ -198,19 +199,13 @@ export const initialUsers: CreateUserDto[] = [
     email: 'admin-egf@gmail.com',
     password: 'Admin@123.',
     fullName: 'Administrador',
-    roles: ['admin'],
-  },
-  {
-    email: 'super-egf@gmail.com',
-    password: 'Super@123.',
-    fullName: 'Super usuario',
-    roles: ['super-user'],
+    roles: ['Admin'],
   },
   {
     email: 'user-egf@gmail.com',
     password: 'User@123.',
     fullName: 'Usuario',
-    roles: ['user'],
+    roles: ['User'],
   },
 ];
 
@@ -253,4 +248,19 @@ export const initialContacts: CreateContactDto[] = [
     phone: '+595981012345',
     email: 'atc@egf.com'
   }
-]
+];
+
+export const initialRoles: CreateRoleDto[] = [
+  {
+    name: 'Admin',
+    description: 'Administrador de la aplicación',
+  },
+  {
+    name: 'User',
+    description: 'Usuario que utiliza la aplicación',
+  },
+  {
+    name: 'Delivery',
+    description: 'Encargado de repartir los pedidos',
+  }
+];

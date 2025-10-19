@@ -7,11 +7,12 @@ import { ConfigService } from '@nestjs/config';
 
 import { AuthService } from 'src/auth/auth.service';
 import { ProductsService } from 'src/products/products.service';
-import { initialContacts, initialProducts, initialRecipes, initialUsers } from './data/seed-data';
+import { initialContacts, initialProducts, initialRecipes, initialRoles, initialUsers } from './data/seed-data';
 import { User } from 'src/auth/entities/user.entity';
 import { ContactsService } from 'src/contacts/contacts.service';
 import { RecipesService } from 'src/recipes/recipes.service';
 import { UsersService } from 'src/users/users.service';
+import { RolesService } from 'src/roles/roles.service';
 
 @Injectable()
 export class SeedService {
@@ -21,7 +22,8 @@ export class SeedService {
     private readonly authService: AuthService,
     private readonly userService: UsersService,
     private readonly contactService: ContactsService,
-    private readonly recipeService: RecipesService
+    private readonly recipeService: RecipesService,
+    private readonly rolesService: RolesService,
   ) {}
 
   async executeSeed(apiKey: string) {
@@ -52,7 +54,8 @@ export class SeedService {
     await Promise.all([
       this.insertProducts(user),
       this.insertContacts(),
-      this.insertRecipes()
+      this.insertRecipes(),
+      this.insertRoles(),
     ]);
 
     return 'Seed Execute';
@@ -60,10 +63,11 @@ export class SeedService {
 
   private async deleteTables() {
     await Promise.all([
-      this.productsService.deleteAllProducts(),
-      this.userService.deleteAllUsers(),
-      this.contactService.deleteAllContacts(),
-      this.recipeService.deleteAllRecipes(),
+      this.productsService.removeAll(),
+      this.userService.removeAll(),
+      this.contactService.removeAll(),
+      this.recipeService.removeAll(),
+      this.rolesService.removeAll(),
     ]);
   }
 
@@ -85,4 +89,7 @@ export class SeedService {
     return initialRecipes.map((recipe) => this.recipeService.create(recipe));
   }
 
+  insertRoles() {
+    return initialRoles.map((role) => this.rolesService.create(role));
+  }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -8,7 +8,6 @@ import { Role } from './entities/role.entity';
 
 @Injectable()
 export class RolesService {
-
   constructor(
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>
@@ -38,5 +37,18 @@ export class RolesService {
   async remove(id: string) {
     const role = await this.findOne(id);
     return await this.roleRepository.remove(role);
+  }
+  
+  handleDBException(error: any) {
+    if (error.code === '23505') throw new BadRequestException(error.detail);
+  }
+
+  async removeAll() {
+    const query = this.roleRepository.createQueryBuilder('role');
+    try {
+      return await query.delete().where({}).execute();
+    } catch (error) {
+      this.handleDBException(error);
+    }
   }
 }

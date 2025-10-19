@@ -198,7 +198,7 @@ export class ProductsService {
     if (error.code === '23505') throw new BadRequestException(error.detail);
   }
 
-  async deleteAllProducts() {
+  async removeAll() {
     const query = this.productRepository.createQueryBuilder('product');
     try {
       return await query.delete().where({}).execute();
