@@ -3,8 +3,8 @@ import { Auth, GetUser } from 'src/auth/decorators';
 import { User } from 'src/auth/entities/user.entity';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CartsService } from './carts.service';
-import { CreateCartItemDto } from './dtos/create-cart-item.dto';
-import { UpdateCartItemDto } from './dtos/update-card-item.dto';
+import { CreateCartItemDto } from './dto/create-cart-item.dto';
+import { UpdateCartItemDto } from './dto/update-card-item.dto';
 
 @ApiTags('Cart')
 @Controller('cart')
