@@ -11,6 +11,9 @@ import { RecipesModule } from './recipes/recipes.module';
 import { CartsModule } from './carts/carts.module';
 import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
+import { TagsModule } from './tags/tags.module';
+import { CategoriesModule } from './categories/categories.module';
+import { GoogleDriveModule } from './google-drive/google-drive.module';
 
 @Module({
   imports: [
@@ -40,6 +43,9 @@ import { RolesModule } from './roles/roles.module';
     CartsModule,
     UsersModule,
     RolesModule,
+    TagsModule,
+    CategoriesModule,
+    GoogleDriveModule,
   ],
   providers: [],
 })

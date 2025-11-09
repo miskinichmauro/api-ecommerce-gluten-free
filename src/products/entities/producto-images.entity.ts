@@ -7,9 +7,9 @@ export class ProductImage {
   id: number;
 
   @Column('text')
-  url: string;
+  driveId: string;
 
-  @ManyToOne(() => Product, (product) => product.imagesName, {
+  @ManyToOne(() => Product, (product) => product.images, {
     onDelete: 'CASCADE',
   })
   product: Product;

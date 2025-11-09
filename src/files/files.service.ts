@@ -1,36 +1,36 @@
-import { existsSync } from 'fs';
-import { join } from 'path';
-import { ConfigService } from '@nestjs/config';
-import type { Express } from 'express';
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { GoogleDriveService } from '../google-drive/google-drive.service';
 
 @Injectable()
 export class FilesService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly googleDriveService: GoogleDriveService,
+  ) {}
 
-  uploadFile(file: Express.Multer.File) {
+  async uploadFile(file: Express.Multer.File, toFolderId?: string) {
     if (!file) {
-      throw new BadRequestException(
-        'Asegúrate de que el archivo sea una imagen valida',
-      );
+      throw new BadRequestException('Archivo inválido');
     }
-
-    const url = `${this.configService.get('API_HOST')}/files/product/${file.filename}`;
-    return { name: file.filename, url };
+    return await this.googleDriveService.uploadFile(file, toFolderId);
   }
 
-  findOne(fileName: string) {
-    const uploadPath = join(process.cwd(), 'static/products', fileName);
-    console.log('findOne', uploadPath);
+  async findById(fileId: string) {
+    return await this.googleDriveService.getFileById(fileId);
+  }
 
-    if (!existsSync(uploadPath)) {
-      throw new NotFoundException('No se encontró la imagen especificada');
-    }
+  async findByName(name: string, opts?: { mimeContains?: string; inFolderId?: string; pageSize?: number; pageToken?: string }) {
+    return await this.googleDriveService.searchFilesByName(name, opts);
+  }
 
-    return uploadPath;
+  async listFolder(folderId: string, opts?: { pageSize?: number; pageToken?: string }) {
+    return await this.googleDriveService.listFilesInFolder(folderId, opts);
+  }
+
+  async createFolder(name: string, parentFolderId?: string) {
+    return await this.googleDriveService.createFolder(name, parentFolderId);
+  }
+
+  async ensureFolderPath(path: string, rootFolderId?: string) {
+    return await this.googleDriveService.ensureFolderPath(path, rootFolderId);
   }
 }

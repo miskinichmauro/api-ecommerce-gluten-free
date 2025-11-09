@@ -6,11 +6,15 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  ManyToMany,
+  JoinTable,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ProductImage } from './producto-images.entity';
 import { User } from 'src/auth/entities/user.entity';
 import { normalizeSlug } from 'src/common/utils/util';
+import { Category } from 'src/categories/entities/category.entity';
+import { Tag } from 'src/tags/entities/tag.entity';
 
 @Entity({ name: 'products' })
 export class Product {
@@ -20,44 +24,22 @@ export class Product {
   @Column('text')
   title: string;
 
-  @Column({
-    type: 'float',
-    default: 0,
-  })
+  @Column({ type: 'float', default: 0 })
   price: number;
 
-  @Column({
-    type: 'text',
-    default: 0,
-  })
+  @Column({ type: 'text', default: 'unidad' })
   unitOfMeasure: string;
 
-  @Column('text')
-  description: string;
+  @Column('text', { nullable: true })
+  description?: string;
 
-  @Column({
-    type: 'text',
-    unique: true,
-  })
+  @Column({ type: 'text', unique: true })
   slug: string;
 
-  @Column({
-    type: 'int',
-    default: 0,
-  })
+  @Column({ type: 'int', default: 0 })
   stock: number;
 
-  @Column({
-    type: 'text',
-    array: true,
-    default: [],
-  })
-  tags: string[];
-
-  @Column({
-    type: 'bool',
-    default: false,
-  })
+  @Column({ type: 'bool', default: false })
   isFeatured: boolean;
 
   @DeleteDateColumn()
@@ -67,22 +49,27 @@ export class Product {
     cascade: true,
     eager: true,
   })
-  imagesName?: ProductImage[];
+  images?: ProductImage[];
 
   @ManyToOne(() => User, (user) => user.product, { eager: true })
   user: User;
 
-  @BeforeInsert()
-  checkTagsInsert() {
-    if (this.tags?.length > 0) this.tags.forEach((item) => item.toLowerCase());
-  }
+  @ManyToOne(() => Category, (category) => category.products, { eager: true, nullable: true })
+  category?: Category;
+
+  @ManyToMany(() => Tag, (tag) => tag.products, { cascade: true, eager: true })
+  @JoinTable({
+    name: 'product_tags',
+    joinColumn: { name: 'product_id' },
+    inverseJoinColumn: { name: 'tag_id' },
+  })
+  tags?: Tag[];
 
   @BeforeInsert()
   checkSlugInsert() {
     if (!this.slug) {
       this.slug = this.title;
     }
-
     this.slug = normalizeSlug(this.slug.trim());
   }
 

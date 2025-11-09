@@ -1,0 +1,89 @@
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Category } from './entities/category.entity';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+
+@Injectable()
+export class CategoriesService {
+  private readonly logger = new Logger('CategoriesService');
+
+  constructor(
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+  ) {}
+
+  async create(createCategoryDto: CreateCategoryDto) {
+    try {
+      const category = this.categoryRepository.create(createCategoryDto);
+      await this.categoryRepository.save(category);
+      return category;
+    } catch (error) {
+      this.handleDBException(error);
+    }
+  }
+
+  async findAll() {
+    const categories = await this.categoryRepository.find({
+      order: { name: 'ASC' },
+      relations: ['products'], 
+    });
+    return categories;
+  }
+
+  async findOne(id: string) {
+    const category = await this.categoryRepository.findOne({
+      where: { id },
+      relations: ['products'],
+    });
+
+    if (!category) {
+      throw new NotFoundException(`No se encontró la categoría con id: '${id}'`);
+    }
+
+    return category;
+  }
+
+  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+    const category = await this.categoryRepository.preload({
+      id,
+      ...updateCategoryDto,
+    });
+
+    if (!category) {
+      throw new NotFoundException(`No se encontró la categoría con id: '${id}'`);
+    }
+
+    try {
+      await this.categoryRepository.save(category);
+      return category;
+    } catch (error) {
+      this.handleDBException(error);
+    }
+  }
+
+  async remove(id: string) {
+    const category = await this.findOne(id);
+    await this.categoryRepository.remove(category);
+    return { message: `Categoría eliminada: ${category.name}` };
+  }
+
+  private handleDBException(error: unknown): never {
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      const err = error as { code?: string; detail?: string };
+      if (err.code === '23505') {
+        throw new BadRequestException(err.detail);
+      }
+    }
+
+    this.logger.error(error);
+    throw new InternalServerErrorException('Error inesperado en CategoriesService');
+  }
+}

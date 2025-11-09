@@ -1,46 +1,65 @@
 import {
+  Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   Post,
-  Res,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiOperation } from '@nestjs/swagger';
-import { diskStorage } from 'multer';
 import { FilesService } from './files.service';
-import type { Response, Express } from 'express';
-import { fileFilter, fileNamer } from './helpers';
+import type { Express } from 'express';
+import { CreateFolderDto } from './dto/create-folder.dto';
+import { UploadToFolderDto } from './dto/upload-to-folder.dto';
 
+@ApiTags('Files')
 @Controller('files')
 export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
-  @Post('product/upload')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      fileFilter: fileFilter,
-      storage: diskStorage({
-        destination: './static/products',
-        filename: fileNamer,
-      }),
-    }),
-  )
-  @ApiOperation({
-    summary: 'Carga un archivo en el servidor',
-  })
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return this.filesService.uploadFile(file);
+  @Post('upload')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Sube un archivo a Google Drive' })
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() uploadToFolderDto: UploadToFolderDto,
+  ) {
+    const { folderId } = uploadToFolderDto ?? {};
+    return await this.filesService.uploadFile(file, folderId);
   }
 
-  @Get('product/:fileName')
-  @ApiOperation({
-    summary: 'Devuelve un archivo por nombre',
-  })
-  findOne(@Res() res: Response, @Param('fileName') fileName: string) {
-    const path = this.filesService.findOne(fileName);
-    res.sendFile(path);
+  @Get('drive/search')
+  @ApiOperation({ summary: 'Busca archivos por nombre' })
+  async searchByName(
+    @Query('name') name: string,
+    @Query('folderId') folderId?: string,
+  ) {
+    return await this.filesService.findByName(name, {
+      inFolderId: folderId,
+      mimeContains: 'image/',
+    });
+  }
+
+  @Get('drive/:id')
+  @ApiOperation({ summary: 'Obtiene un archivo por ID' })
+  async getFileById(@Param('id') id: string) {
+    return await this.filesService.findById(id);
+  }
+
+  @Get('drive/folder/:folderId')
+  @ApiOperation({ summary: 'Lista todos los archivos dentro de una carpeta' })
+  async listFiles(@Param('folderId') folderId: string) {
+    return await this.filesService.listFolder(folderId);
+  }
+
+  @Post('drive/folder')
+  @ApiOperation({ summary: 'Crea una carpeta o una jerarquía de carpetas' })
+  async createFolder(@Body() body: CreateFolderDto) {
+    return await this.filesService.ensureFolderPath(body.path, body.parentFolderId);
   }
 }

@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, DeepPartial, In, Repository } from 'typeorm';
 import { validate as isUUId } from 'uuid';
 
 import { CreateProductDto, UpdateProductDto } from './dto';
@@ -15,6 +15,8 @@ import { ProductImage } from './entities';
 import { Product } from './entities/product.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { User } from 'src/auth/entities/user.entity';
+import { Category } from 'src/categories/entities/category.entity';
+import { Tag } from 'src/tags/entities/tag.entity';
 import { FilesService } from 'src/files/files.service';
 
 @Injectable()
@@ -34,37 +36,53 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto, user: User) {
-    const { imagesName = [], ...productDetails } = createProductDto;
-    const newProduct = this.productRepository.create({
-      ...productDetails,
-      imagesName: imagesName.map((url) =>
-        this.productImageRepository.create({ url }),
-      ),
-      user,
-    });
-
-    if (newProduct.imagesName) {
-      this.validateImages(newProduct.imagesName);
+  const { imageIds, imagesName = [], categoryId, tagIds = [], ...productDetails } = createProductDto;
+  const driveIds = imageIds ?? imagesName;
+    let category: Category | null = null;
+    if (categoryId) {
+      category = await this.dataSource.getRepository(Category).findOneBy({ id: categoryId });
+      if (!category) {
+        throw new NotFoundException(`No se encontró la categoría con id: ${categoryId}`);
+      }
     }
 
+    let tags: Tag[] | null = null;
+    if (tagIds.length > 0) {
+      tags = await this.dataSource.getRepository(Tag).findBy({ id: In(tagIds) });
+      if (tags?.length !== tagIds.length) {
+        throw new NotFoundException(`Algunos tags no existen en la base de datos.`);
+      }
+    }
+
+    const newProduct = this.productRepository.create({
+      ...productDetails,
+      images: driveIds.map((driveId) =>
+        this.productImageRepository.create({ driveId }),
+      ),
+      user,
+      category,
+      tags,
+    } as DeepPartial<Product>);
+
+    if (newProduct.images) await this.validateImages(newProduct.images);
+
     await this.productRepository.save(newProduct);
-    return { ...newProduct, imagesName };
+    return { ...newProduct, imagesName: driveIds };
   }
 
-  private validateImages(images: ProductImage[]) {
+  private async validateImages(images: ProductImage[]) {
     const imagesDontExists: string[] = [];
-    images?.forEach((item) => {
+    for (const item of images ?? []) {
       try {
-        this.fileService.findOne(item.url);
+        await this.fileService.findById(item.driveId);
       } catch (error) {
-        console.log(error);
         if (error?.status === HttpStatus.NOT_FOUND) {
-          imagesDontExists.push(item.url);
+          imagesDontExists.push(item.driveId);
         } else {
           throw error;
         }
       }
-    });
+    }
 
     if (imagesDontExists.length > 0) {
       throw new NotFoundException(
@@ -85,7 +103,7 @@ export class ProductsService {
       take: limit,
       skip: offset,
       relations: {
-        imagesName: true,
+        images: true,
       },
     });
 
@@ -94,9 +112,13 @@ export class ProductsService {
       pages: Math.ceil(totalProducts / limit),
       products: products.map((product) => ({
         ...product,
-        imagesName: product.imagesName?.map((img) => img.url),
+        imagesName: product.images?.map((img) => this.toDriveUrl(img.driveId)),
       })),
     };
+  }
+
+  private toDriveUrl(id: string) {
+    return `https://drive.google.com/uc?id=${id}`;
   }
 
   async findOne(param: string) {
@@ -111,7 +133,7 @@ export class ProductsService {
           title: param,
           slug: param,
         })
-        .leftJoinAndSelect('product.imagesName', 'productImages')
+        .leftJoinAndSelect('product.images', 'productImages')
         .getOne();
     }
 
@@ -126,7 +148,7 @@ export class ProductsService {
 
     return {
       ...product,
-      imagesName: product.imagesName?.map((img) => img.url),
+      imagesName: product.images?.map((img) => this.toDriveUrl(img.driveId)),
     };
   }
 
@@ -147,10 +169,9 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto, user: User) {
-    const { imagesName, ...toUpdate } = updateProductDto;
+    const { imageIds, imagesName, categoryId, tagIds = [], ...toUpdate } = updateProductDto;
 
     const product = await this.productRepository.preload({ id, ...toUpdate });
-
     if (!product) {
       throw new NotFoundException(`No se encontró el producto con id: '${id}'`);
     }
@@ -160,27 +181,76 @@ export class ProductsService {
     await queryRunner.startTransaction();
 
     try {
-      if (imagesName) {
+      if (categoryId) {
+        const category = await queryRunner.manager
+          .getRepository(Category)
+          .findOneBy({ id: categoryId });
+
+        if (!category) {
+          throw new NotFoundException(`No se encontró la categoría con id: '${categoryId}'`);
+        }
+
+        product.category = category;
+      }
+
+      if (tagIds.length > 0) {
+        const tags = await queryRunner.manager
+          .getRepository(Tag)
+          .findBy({ id: In(tagIds) });
+
+        if (tags.length !== tagIds.length) {
+          throw new NotFoundException(`Algunos tags no existen en la base de datos.`);
+        }
+
+        product.tags = tags;
+      }
+
+      if (imageIds ?? imagesName) {
         await queryRunner.manager.delete(ProductImage, { product: { id } });
-        product.imagesName = imagesName.map((image) =>
-          this.productImageRepository.create({ url: image }),
+        const driveIds = (imageIds ?? imagesName) as string[];
+        product.images = driveIds.map((driveId) =>
+          this.productImageRepository.create({ driveId }),
         );
+        await this.validateImages(product.images);
       }
 
       product.user = user;
+
       await queryRunner.manager.save(product);
       await queryRunner.commitTransaction();
       await queryRunner.release();
-    } catch {
-      await queryRunner.rollbackTransaction();
-    }
 
-    return this.findOnePlain(id);
+      return this.findOnePlain(id);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
+      this.handleException(error);
+    }
   }
 
   async remove(id: string) {
     const product = await this.findOne(id);
     await this.productRepository.softRemove(product);
+  }
+
+  async searchProducts(query: string, limit = 10, offset = 0) {
+    const [products, totalProducts] = await this.productRepository
+      .createQueryBuilder('product')
+      .where('product.title ILIKE :q OR product.description ILIKE :q', { q: `%${query}%` })
+      .leftJoinAndSelect('product.images', 'productImages')
+      .orderBy('product.title', 'ASC')
+      .skip(offset)
+      .take(limit)
+      .getManyAndCount();
+
+    return {
+      count: totalProducts,
+      pages: Math.ceil(totalProducts / limit),
+      products: products.map((product) => ({
+        ...product,
+        imagesName: product.images?.map((img) => this.toDriveUrl(img.driveId)),
+      })),
+    };
   }
 
   handleException(error: any) {

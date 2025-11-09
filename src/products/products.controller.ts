@@ -18,6 +18,7 @@ import { Auth, GetUser } from 'src/auth/decorators';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GetAllProductsDto } from './dto/get-all-products';
 import { Roles } from 'src/auth/enums/role.enum';
+import { SearchProductsDto } from 'src/common/dto/searchProducts.dto';
 
 @Controller('products')
 @ApiTags('Products')
@@ -47,6 +48,14 @@ export class ProductsController {
   async findAll(@Query() getAllProductsDto: GetAllProductsDto) {
     const isFeatured = getAllProductsDto.isFeatured === 'true';
     return await this.productsService.findAll(getAllProductsDto, isFeatured);
+  }
+
+  @Get('search')
+  @ApiOperation({
+    summary: 'Búsqueda de productos',
+  })
+  async search(@Query() query: SearchProductsDto) {
+    return this.productsService.searchProducts(query.query ?? '', query.limit, query.offset);
   }
 
   @Get(':param')

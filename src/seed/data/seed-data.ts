@@ -12,7 +12,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Pan artesanal hecho con harina de arroz, apto para celíacos.',
     slug: 'pan_sin_gluten_arroz',
     stock: 50,
-    tags: ['pan', 'sin gluten', 'arroz'],
     isFeatured: true,
   },
   {
@@ -22,7 +21,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Pan casero elaborado con fécula de mandioca.',
     slug: 'pan_mandioca_sin_gluten',
     stock: 40,
-    tags: ['pan', 'mandioca', 'sin gluten'],
     isFeatured: true,
   },
   {
@@ -32,7 +30,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Crujientes galletas de maíz libres de gluten y azúcar.',
     slug: 'galletas_maiz_sin_azucar',
     stock: 70,
-    tags: ['galletas', 'maíz', 'sin gluten'],
     isFeatured: true,
   },
   {
@@ -42,7 +39,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Harina 100% de arroz, ideal para panificados y repostería.',
     slug: 'harina_arroz',
     stock: 100,
-    tags: ['harina', 'sin gluten', 'arroz'],
     isFeatured: true,
   },
   {
@@ -52,7 +48,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Harina fina de almendras, ideal para repostería sin gluten.',
     slug: 'harina_almendras',
     stock: 60,
-    tags: ['harina', 'almendras', 'sin gluten'],
     isFeatured: true,
   },
   {
@@ -62,7 +57,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Tortillas frescas hechas con maíz, libres de gluten.',
     slug: 'tortillas_maiz_sin_gluten',
     stock: 80,
-    tags: ['tortillas', 'maíz', 'sin gluten'],
   },
   {
     title: 'Pizza base sin gluten',
@@ -72,7 +66,6 @@ export const initialProducts: CreateProductDto[] = [
       'Base de pizza lista para hornear, hecha con harina sin gluten.',
     slug: 'pizza_base_sin_gluten',
     stock: 45,
-    tags: ['pizza', 'base', 'sin gluten'],
   },
   {
     title: 'Brownie sin gluten',
@@ -81,7 +74,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Brownie de chocolate sin gluten ni azúcar.',
     slug: 'brownie_sin_gluten',
     stock: 55,
-    tags: ['brownie', 'chocolate', 'sin gluten'],
   },
   {
     title: 'Cerveza sin gluten',
@@ -90,7 +82,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Cerveza artesanal apta para celíacos.',
     slug: 'cerveza_sin_gluten',
     stock: 90,
-    tags: ['cerveza', 'artesanal', 'sin gluten'],
   },
   {
     title: 'Pasta de arroz sin gluten',
@@ -99,7 +90,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Pasta elaborada con arroz, libre de gluten.',
     slug: 'pasta_arroz_sin_gluten',
     stock: 75,
-    tags: ['pasta', 'arroz', 'sin gluten'],
   },
   {
     title: 'Fideos de quinoa sin gluten',
@@ -108,7 +98,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Fideos saludables hechos con quinoa.',
     slug: 'fideos_quinoa_sin_gluten',
     stock: 60,
-    tags: ['fideos', 'quinoa', 'sin gluten'],
   },
   {
     title: 'Galletas de coco sin gluten',
@@ -117,7 +106,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Galletas dulces a base de coco, libres de gluten.',
     slug: 'galletas_coco_sin_gluten',
     stock: 80,
-    tags: ['galletas', 'coco', 'sin gluten'],
   },
   {
     title: 'Cereal inflado de arroz sin gluten',
@@ -126,7 +114,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Cereal crocante a base de arroz inflado.',
     slug: 'cereal_arroz_sin_gluten',
     stock: 100,
-    tags: ['cereal', 'arroz', 'sin gluten'],
   },
   {
     title: 'Muffin de banana sin gluten',
@@ -136,7 +123,6 @@ export const initialProducts: CreateProductDto[] = [
       'Muffin casero elaborado con harina sin gluten y banana madura.',
     slug: 'muffin_banana_sin_gluten',
     stock: 40,
-    tags: ['muffin', 'banana', 'sin gluten'],
   },
   {
     title: 'Barra de granola sin gluten',
@@ -145,7 +131,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Barra energética con granola y miel, libre de gluten.',
     slug: 'barra_granola_sin_gluten',
     stock: 200,
-    tags: ['barra', 'granola', 'sin gluten'],
   },
   {
     title: 'Pan de quinoa sin gluten',
@@ -154,7 +139,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Pan integral elaborado con harina de quinoa.',
     slug: 'pan_quinoa_sin_gluten',
     stock: 30,
-    tags: ['pan', 'quinoa', 'sin gluten'],
   },
   {
     title: 'Galletas de avena certificada sin gluten',
@@ -163,7 +147,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Galletas dulces con avena certificada sin gluten.',
     slug: 'galletas_avena_sin_gluten',
     stock: 60,
-    tags: ['galletas', 'avena', 'sin gluten'],
   },
   {
     title: 'Cerveza artesanal de quinoa sin gluten',
@@ -172,7 +155,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Cerveza especial elaborada con quinoa.',
     slug: 'cerveza_quinoa_sin_gluten',
     stock: 70,
-    tags: ['cerveza', 'quinoa', 'sin gluten'],
   },
   {
     title: 'Snacks de mandioca sin gluten',
@@ -181,7 +163,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Crujientes chips de mandioca horneados.',
     slug: 'snacks_mandioca_sin_gluten',
     stock: 90,
-    tags: ['snacks', 'mandioca', 'sin gluten'],
   },
   {
     title: 'Pan de sarraceno sin gluten',
@@ -190,7 +171,6 @@ export const initialProducts: CreateProductDto[] = [
     description: 'Pan integral elaborado con harina de trigo sarraceno.',
     slug: 'pan_sarraceno_sin_gluten',
     stock: 50,
-    tags: ['pan', 'sarraceno', 'sin gluten'],
   },
 ];
 

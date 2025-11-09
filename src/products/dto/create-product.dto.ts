@@ -7,6 +7,7 @@ import {
   IsPositive,
   IsString,
   MinLength,
+  IsUUID,
 } from 'class-validator';
 
 export class CreateProductDto {
@@ -35,17 +36,27 @@ export class CreateProductDto {
   @IsOptional()
   stock?: number;
 
-  @IsString({ each: true })
-  @IsArray()
-  @IsOptional()
-  tags?: string[];
-
   @IsBoolean()
   @IsOptional()
   isFeatured?: boolean;
+
+  // Nuevo: IDs de archivos en Google Drive
+  @IsString({ each: true })
+  @IsArray()
+  @IsOptional()
+  imageIds?: string[];
 
   @IsString({ each: true })
   @IsArray()
   @IsOptional()
   imagesName?: string[];
+
+  @IsArray()
+  @IsUUID('4', { each: true })
+  @IsOptional()
+  tagIds?: string[];
+
+  @IsUUID('4')
+  @IsOptional()
+  categoryId?: string;
 }
