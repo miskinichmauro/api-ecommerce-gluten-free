@@ -36,8 +36,7 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto, user: User) {
-  const { imageIds, imagesName = [], categoryId, tagIds = [], ...productDetails } = createProductDto;
-  const driveIds = imageIds ?? imagesName;
+    const { imagesName = [], categoryId, tagIds = [], ...productDetails } = createProductDto;
     let category: Category | null = null;
     if (categoryId) {
       category = await this.dataSource.getRepository(Category).findOneBy({ id: categoryId });
@@ -56,33 +55,36 @@ export class ProductsService {
 
     const newProduct = this.productRepository.create({
       ...productDetails,
-      images: driveIds.map((driveId) =>
-        this.productImageRepository.create({ driveId }),
+      imagesName: imagesName.map((url) =>
+        this.productImageRepository.create({ url }),
       ),
       user,
       category,
       tags,
     } as DeepPartial<Product>);
 
-    if (newProduct.images) await this.validateImages(newProduct.images);
+    if (newProduct.imagesName) {
+      this.validateImages(newProduct.imagesName);
+    }
 
     await this.productRepository.save(newProduct);
-    return { ...newProduct, imagesName: driveIds };
+    return { ...newProduct, imagesName };
   }
 
-  private async validateImages(images: ProductImage[]) {
+  private validateImages(images: ProductImage[]) {
     const imagesDontExists: string[] = [];
-    for (const item of images ?? []) {
+    images?.forEach((item) => {
       try {
-        await this.fileService.findById(item.driveId);
+        this.fileService.findOne(item.url);
       } catch (error) {
+        console.log(error);
         if (error?.status === HttpStatus.NOT_FOUND) {
-          imagesDontExists.push(item.driveId);
+          imagesDontExists.push(item.url);
         } else {
           throw error;
         }
       }
-    }
+    });
 
     if (imagesDontExists.length > 0) {
       throw new NotFoundException(
@@ -103,7 +105,7 @@ export class ProductsService {
       take: limit,
       skip: offset,
       relations: {
-        images: true,
+        imagesName: true,
       },
     });
 
@@ -112,13 +114,9 @@ export class ProductsService {
       pages: Math.ceil(totalProducts / limit),
       products: products.map((product) => ({
         ...product,
-        imagesName: product.images?.map((img) => this.toDriveUrl(img.driveId)),
+        imagesName: product.imagesName?.map((img) => img.url),
       })),
     };
-  }
-
-  private toDriveUrl(id: string) {
-    return `https://drive.google.com/uc?id=${id}`;
   }
 
   async findOne(param: string) {
@@ -148,7 +146,7 @@ export class ProductsService {
 
     return {
       ...product,
-      imagesName: product.images?.map((img) => this.toDriveUrl(img.driveId)),
+      imagesName: product.imagesName?.map((img) => img.url),
     };
   }
 
@@ -169,7 +167,7 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto, user: User) {
-    const { imageIds, imagesName, categoryId, tagIds = [], ...toUpdate } = updateProductDto;
+    const { imagesName, categoryId, tagIds = [], ...toUpdate } = updateProductDto;
 
     const product = await this.productRepository.preload({ id, ...toUpdate });
     if (!product) {
@@ -205,13 +203,11 @@ export class ProductsService {
         product.tags = tags;
       }
 
-      if (imageIds ?? imagesName) {
+      if (imagesName) {
         await queryRunner.manager.delete(ProductImage, { product: { id } });
-        const driveIds = (imageIds ?? imagesName) as string[];
-        product.images = driveIds.map((driveId) =>
-          this.productImageRepository.create({ driveId }),
+        product.imagesName = imagesName.map((image) =>
+          this.productImageRepository.create({ url: image }),
         );
-        await this.validateImages(product.images);
       }
 
       product.user = user;
@@ -221,7 +217,8 @@ export class ProductsService {
       await queryRunner.release();
 
       return this.findOnePlain(id);
-    } catch (error) {
+    } 
+    catch (error) {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
       this.handleException(error);
@@ -237,7 +234,7 @@ export class ProductsService {
     const [products, totalProducts] = await this.productRepository
       .createQueryBuilder('product')
       .where('product.title ILIKE :q OR product.description ILIKE :q', { q: `%${query}%` })
-      .leftJoinAndSelect('product.images', 'productImages')
+      .leftJoinAndSelect('product.imagesName', 'productImages')
       .orderBy('product.title', 'ASC')
       .skip(offset)
       .take(limit)
@@ -248,7 +245,7 @@ export class ProductsService {
       pages: Math.ceil(totalProducts / limit),
       products: products.map((product) => ({
         ...product,
-        imagesName: product.images?.map((img) => this.toDriveUrl(img.driveId)),
+        imagesName: product.imagesName?.map((img) => this.fileService.findOne(img.url)),
       })),
     };
   }

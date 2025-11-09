@@ -13,7 +13,6 @@ import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { TagsModule } from './tags/tags.module';
 import { CategoriesModule } from './categories/categories.module';
-import { GoogleDriveModule } from './google-drive/google-drive.module';
 
 @Module({
   imports: [
@@ -45,7 +44,6 @@ import { GoogleDriveModule } from './google-drive/google-drive.module';
     RolesModule,
     TagsModule,
     CategoriesModule,
-    GoogleDriveModule,
   ],
   providers: [],
 })
