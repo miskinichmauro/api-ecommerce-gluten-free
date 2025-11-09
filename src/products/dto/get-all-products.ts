@@ -1,7 +1,7 @@
 import { IsOptional, IsBooleanString } from 'class-validator';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { ProductsListQueryDto } from './products-list-query.dto';
 
-export class GetAllProductsDto extends PaginationDto {
+export class GetAllProductsDto extends ProductsListQueryDto {
   @IsOptional()
   @IsBooleanString()
   isFeatured?: string;

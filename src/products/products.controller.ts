@@ -12,11 +12,11 @@ import {
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { Auth, GetUser } from 'src/auth/decorators';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GetAllProductsDto } from './dto/get-all-products';
+import { ProductsListQueryDto } from './dto/products-list-query.dto';
 import { Roles } from 'src/auth/enums/role.enum';
 import { SearchProductsDto } from 'src/common/dto/searchProducts.dto';
 
@@ -55,7 +55,7 @@ export class ProductsController {
     summary: 'Búsqueda de productos',
   })
   async search(@Query() query: SearchProductsDto) {
-    return this.productsService.searchProducts(query.query ?? '', query.limit, query.offset);
+    return this.productsService.searchProducts(query);
   }
 
   @Get(':param')
@@ -70,7 +70,7 @@ export class ProductsController {
   @ApiOperation({
     summary: 'Devuelve todos los productos por Tag paginado',
   })
-  async findByTags(@Param('tag') tag: string, paginationDto: PaginationDto) {
+  async findByTags(@Param('tag') tag: string, @Query() paginationDto: ProductsListQueryDto) {
     try {
       return await this.productsService.findByTag(tag, paginationDto);
     } catch (error) {

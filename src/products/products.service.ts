@@ -11,9 +11,11 @@ import { DataSource, DeepPartial, In, Repository } from 'typeorm';
 import { validate as isUUId } from 'uuid';
 
 import { CreateProductDto, UpdateProductDto } from './dto';
+import { GetAllProductsDto } from './dto/get-all-products';
+import { ProductsListQueryDto } from './dto/products-list-query.dto';
 import { ProductImage } from './entities';
 import { Product } from './entities/product.entity';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { SearchProductsDto } from 'src/common/dto/searchProducts.dto';
 import { User } from 'src/auth/entities/user.entity';
 import { Category } from 'src/categories/entities/category.entity';
 import { Tag } from 'src/tags/entities/tag.entity';
@@ -94,9 +96,9 @@ export class ProductsService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto, isFeatured?: boolean) {
-    const { limit = 10, offset = 0 } = paginationDto;
-    
+  async findAll(paginationDto: GetAllProductsDto, isFeatured?: boolean) {
+    const { limit = 10, offset = 0, sortBy = 'title', sortOrder = 'ASC' } = paginationDto;
+
     const where = isFeatured === true
       ? { isFeatured: true } 
       : {};
@@ -104,6 +106,7 @@ export class ProductsService {
       where,
       take: limit,
       skip: offset,
+      order: { [sortBy]: sortOrder },
       relations: {
         imagesName: true,
       },
@@ -150,13 +153,16 @@ export class ProductsService {
     };
   }
 
-  async findByTag(tag: string, paginationDto: PaginationDto) {
+  async findByTag(tag: string, paginationDto: ProductsListQueryDto) {
+    const { limit = 10, offset = 0, sortBy = 'title', sortOrder = 'ASC' } = paginationDto;
     const queryBuilder = this.productRepository.createQueryBuilder('product');
     const products = await queryBuilder
-      .where('LOWER(:tag) = ANY(tags)', { tag })
-      .leftJoinAndSelect('product.images', 'productImages')
-      .limit(paginationDto.limit)
-      .offset(paginationDto.offset)
+      .leftJoin('product.tags', 'tag')
+      .leftJoinAndSelect('product.imagesName', 'productImages')
+      .where('LOWER(tag.name) = LOWER(:tag)', { tag })
+      .orderBy(`product.${sortBy}`, sortOrder as 'ASC' | 'DESC')
+      .take(limit)
+      .skip(offset)
       .getMany();
 
     if (products.length == 0)
@@ -230,12 +236,13 @@ export class ProductsService {
     await this.productRepository.softRemove(product);
   }
 
-  async searchProducts(query: string, limit = 10, offset = 0) {
+  async searchProducts(searchDto: SearchProductsDto) {
+    const { query = '', limit = 10, offset = 0, sortBy = 'title', sortOrder = 'ASC' } = searchDto;
     const [products, totalProducts] = await this.productRepository
       .createQueryBuilder('product')
       .where('product.title ILIKE :q OR product.description ILIKE :q', { q: `%${query}%` })
       .leftJoinAndSelect('product.imagesName', 'productImages')
-      .orderBy('product.title', 'ASC')
+      .orderBy(`product.${sortBy}`, sortOrder as 'ASC' | 'DESC')
       .skip(offset)
       .take(limit)
       .getManyAndCount();
