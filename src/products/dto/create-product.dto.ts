@@ -57,6 +57,5 @@ export class CreateProductDto {
   tagIds?: string[];
 
   @IsUUID('4')
-  @IsOptional()
-  categoryId?: string;
+  categoryId: string;
 }

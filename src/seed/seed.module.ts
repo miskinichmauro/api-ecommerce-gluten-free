@@ -8,6 +8,8 @@ import { ContactsModule } from 'src/contacts/contacts.module';
 import { RecipesModule } from 'src/recipes/recipes.module';
 import { UsersModule } from 'src/users/users.module';
 import { RolesModule } from 'src/roles/roles.module';
+import { CategoriesModule } from 'src/categories/categories.module';
+import { TagsModule } from 'src/tags/tags.module';
 
 @Module({
   controllers: [SeedController],
@@ -20,6 +22,8 @@ import { RolesModule } from 'src/roles/roles.module';
     ContactsModule, 
     RecipesModule,
     RolesModule,
+    CategoriesModule,
+    TagsModule,
   ],
 })
 export class SeedModule {}

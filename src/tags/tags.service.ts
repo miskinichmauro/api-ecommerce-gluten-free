@@ -74,6 +74,10 @@ export class TagsService {
     return { message: `Tag eliminado: ${tag.name}` };
   }
 
+  async removeAll() {
+    await this.tagRepository.createQueryBuilder().delete().where({}).execute();
+  }
+
   private handleDBException(error: any): never {
     if (typeof error === 'object' && error !== null && 'code' in error) {
       const err = error as { code?: string; detail?: string };

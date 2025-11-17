@@ -75,6 +75,10 @@ export class CategoriesService {
     return { message: `Categoría eliminada: ${category.name}` };
   }
 
+  async removeAll() {
+    await this.categoryRepository.createQueryBuilder().delete().where({}).execute();
+  }
+
   private handleDBException(error: unknown): never {
     if (typeof error === 'object' && error !== null && 'code' in error) {
       const err = error as { code?: string; detail?: string };

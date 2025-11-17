@@ -54,8 +54,8 @@ export class Product {
   @ManyToOne(() => User, (user) => user.product, { eager: true })
   user: User;
 
-  @ManyToOne(() => Category, (category) => category.products, { eager: true, nullable: true })
-  category?: Category;
+  @ManyToOne(() => Category, (category) => category.products, { eager: true, nullable: false })
+  category: Category;
 
   @ManyToMany(() => Tag, (tag) => tag.products, { cascade: true, eager: true })
   @JoinTable({

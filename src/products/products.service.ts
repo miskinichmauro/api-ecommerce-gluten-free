@@ -39,12 +39,13 @@ export class ProductsService {
 
   async create(createProductDto: CreateProductDto, user: User) {
     const { imagesName = [], categoryId, tagIds = [], ...productDetails } = createProductDto;
-    let category: Category | null = null;
-    if (categoryId) {
-      category = await this.dataSource.getRepository(Category).findOneBy({ id: categoryId });
-      if (!category) {
-        throw new NotFoundException(`No se encontró la categoría con id: ${categoryId}`);
-      }
+    if (!categoryId) {
+      throw new BadRequestException('Debe proporcionar una categoria para el producto.');
+    }
+
+    const category = await this.dataSource.getRepository(Category).findOneBy({ id: categoryId });
+    if (!category) {
+      throw new NotFoundException(`No se encontró la categoría con id: ${categoryId}`);
     }
 
     let tags: Tag[] | null = null;
