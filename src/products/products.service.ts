@@ -43,12 +43,12 @@ export class ProductsService {
   async create(createProductDto: CreateProductDto, user: User) {
     const { imageIds = [], categoryId, tagIds = [], ...productDetails } = createProductDto;
     if (!categoryId) {
-      throw new BadRequestException('Debe proporcionar una categor�a para el producto.');
+      throw new BadRequestException('Debe proporcionar una categoría para el producto.');
     }
 
     const category = await this.dataSource.getRepository(Category).findOneBy({ id: categoryId });
     if (!category) {
-      throw new NotFoundException(`No se encontr� la categor�a con id: ${categoryId}`);
+      throw new NotFoundException(`No se encontró la categoría con id: ${categoryId}`);
     }
 
     let tags: Tag[] | null = null;
@@ -67,7 +67,7 @@ export class ProductsService {
     const newProduct = this.productRepository.create({
       ...productDetails,
       images: imageFileNames.map((fileName) =>
-        this.productImageRepository.create({ url: fileName }),
+        this.productImageRepository.create({ fileName }),
       ),
       user,
       category,
@@ -122,7 +122,7 @@ export class ProductsService {
     }
 
     if (!product) {
-      throw new NotFoundException(`No se encontr?�³ el producto: '${param}'`);
+      throw new NotFoundException(`No se encontró el producto: '${param}'`);
     }
     return product;
   }
@@ -157,7 +157,7 @@ export class ProductsService {
 
     const product = await this.productRepository.preload({ id, ...toUpdate });
     if (!product) {
-      throw new NotFoundException(`No se encontr?�³ el producto con id: '${id}'`);
+      throw new NotFoundException(`No se encontró el producto con id: '${id}'`);
     }
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -171,7 +171,7 @@ export class ProductsService {
           .findOneBy({ id: categoryId });
 
         if (!category) {
-          throw new NotFoundException(`No se encontr� la categor�a con id: '${categoryId}'`);
+          throw new NotFoundException(`No se encontró la categoría con id: '${categoryId}'`);
         }
 
         product.category = category;
@@ -196,7 +196,7 @@ export class ProductsService {
             : [];
         await queryRunner.manager.delete(ProductImage, { product: { id } });
         product.images = imageFileNames.map((fileName) =>
-          this.productImageRepository.create({ url: fileName }),
+          this.productImageRepository.create({ fileName }),
         );
       }
 
@@ -240,7 +240,7 @@ export class ProductsService {
   private mapProductResponse(product: Product): ProductWithImages {
     const images =
       product.images?.map((img) =>
-        this.fileService.getPublicUrl(this.fileType, img.url),
+        this.fileService.getPublicUrl(this.fileType, img.fileName),
       ) ?? [];
 
     return {
@@ -262,13 +262,13 @@ export class ProductsService {
 
     this.handleDBException(error);
     throw new InternalServerErrorException(
-      'Ocurri� un error inesperado. Por favor, verifique los logs',
+      'Ocurrió un error inesperado. Por favor, verifique los logs',
     );
   }
 
   handleDBException(error: unknown) {
     if (this.isPostgresError(error) && error.code === '23505') {
-      throw new BadRequestException(error.detail ?? 'Violaci�n de restricci�n �nica');
+      throw new BadRequestException(error.detail ?? 'Violación de restricción única');
     }
   }
 
