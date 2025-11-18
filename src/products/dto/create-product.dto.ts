@@ -40,16 +40,11 @@ export class CreateProductDto {
   @IsOptional()
   isFeatured?: boolean;
 
-  // Nuevo: IDs de archivos en Google Drive
+  // IDs devueltos por el FilesService después de subir imágenes
   @IsString({ each: true })
   @IsArray()
   @IsOptional()
   imageIds?: string[];
-
-  @IsString({ each: true })
-  @IsArray()
-  @IsOptional()
-  imagesName?: string[];
 
   @IsArray()
   @IsUUID('4', { each: true })

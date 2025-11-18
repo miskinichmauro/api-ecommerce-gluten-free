@@ -1,6 +1,6 @@
+﻿/* cspell:ignore categor�a ILIKE */
 import {
   BadRequestException,
-  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -21,9 +21,12 @@ import { Category } from 'src/categories/entities/category.entity';
 import { Tag } from 'src/tags/entities/tag.entity';
 import { FilesService } from 'src/files/files.service';
 
+type ProductWithImages = Omit<Product, 'images'> & { images?: string[] };
+
 @Injectable()
 export class ProductsService {
   private readonly logger = new Logger('ProductsService');
+  private readonly fileType = 'products';
 
   constructor(
     @InjectRepository(Product)
@@ -38,14 +41,14 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto, user: User) {
-    const { imagesName = [], categoryId, tagIds = [], ...productDetails } = createProductDto;
+    const { imageIds = [], categoryId, tagIds = [], ...productDetails } = createProductDto;
     if (!categoryId) {
-      throw new BadRequestException('Debe proporcionar una categoria para el producto.');
+      throw new BadRequestException('Debe proporcionar una categor�a para el producto.');
     }
 
     const category = await this.dataSource.getRepository(Category).findOneBy({ id: categoryId });
     if (!category) {
-      throw new NotFoundException(`No se encontró la categoría con id: ${categoryId}`);
+      throw new NotFoundException(`No se encontr� la categor�a con id: ${categoryId}`);
     }
 
     let tags: Tag[] | null = null;
@@ -56,46 +59,25 @@ export class ProductsService {
       }
     }
 
+    const imageFileNames: string[] =
+      imageIds.length > 0
+        ? this.fileService.getFileNamesFromIds(this.fileType, imageIds)
+        : [];
+
     const newProduct = this.productRepository.create({
       ...productDetails,
-      imagesName: imagesName.map((url) =>
-        this.productImageRepository.create({ url }),
+      images: imageFileNames.map((fileName) =>
+        this.productImageRepository.create({ url: fileName }),
       ),
       user,
       category,
       tags,
     } as DeepPartial<Product>);
 
-    if (newProduct.imagesName) {
-      this.validateImages(newProduct.imagesName);
-    }
-
     await this.productRepository.save(newProduct);
-    return { ...newProduct, imagesName };
+    return this.mapProductResponse(newProduct);
   }
 
-  private validateImages(images: ProductImage[]) {
-    const imagesDontExists: string[] = [];
-    images?.forEach((item) => {
-      try {
-        this.fileService.findOne(item.url);
-      } catch (error) {
-        console.log(error);
-        if (error?.status === HttpStatus.NOT_FOUND) {
-          imagesDontExists.push(item.url);
-        } else {
-          throw error;
-        }
-      }
-    });
-
-    if (imagesDontExists.length > 0) {
-      throw new NotFoundException(
-        `No se pudo guardar el producto. Por favor, verifique que las imágenes estén correctamente cargadas: 
-        ${imagesDontExists.join(', ')}`,
-      );
-    }
-  }
 
   async findAll(paginationDto: GetAllProductsDto, isFeatured?: boolean) {
     const { limit = 10, offset = 0, sortBy = 'title', sortOrder = 'ASC' } = paginationDto;
@@ -109,17 +91,14 @@ export class ProductsService {
       skip: offset,
       order: { [sortBy]: sortOrder },
       relations: {
-        imagesName: true,
+        images: true,
       },
     });
 
     return {
       count: totalProducts,
       pages: Math.ceil(totalProducts / limit),
-      products: products.map((product) => ({
-        ...product,
-        imagesName: product.imagesName?.map((img) => img.url),
-      })),
+      products: products.map((product) => this.mapProductResponse(product)),
     };
   }
 
@@ -127,7 +106,10 @@ export class ProductsService {
     let product: Product | null;
 
     if (isUUId(param)) {
-      product = await this.productRepository.findOneBy({ id: param });
+      product = await this.productRepository.findOne({
+        where: { id: param },
+        relations: { images: true },
+      });
     } else {
       const queryBuilder = this.productRepository.createQueryBuilder('product');
       product = await queryBuilder
@@ -135,12 +117,12 @@ export class ProductsService {
           title: param,
           slug: param,
         })
-        .leftJoinAndSelect('product.imagesName', 'productImages')
+        .leftJoinAndSelect('product.images', 'productImages')
         .getOne();
     }
 
     if (!product) {
-      throw new NotFoundException(`No se encontró el producto: '${param}'`);
+      throw new NotFoundException(`No se encontr?�³ el producto: '${param}'`);
     }
     return product;
   }
@@ -148,10 +130,7 @@ export class ProductsService {
   async findOnePlain(param: string) {
     const product = await this.findOne(param);
 
-    return {
-      ...product,
-      imagesName: product.imagesName?.map((img) => img.url),
-    };
+    return this.mapProductResponse(product);
   }
 
   async findByTag(tag: string, paginationDto: ProductsListQueryDto) {
@@ -159,7 +138,7 @@ export class ProductsService {
     const queryBuilder = this.productRepository.createQueryBuilder('product');
     const products = await queryBuilder
       .leftJoin('product.tags', 'tag')
-      .leftJoinAndSelect('product.imagesName', 'productImages')
+      .leftJoinAndSelect('product.images', 'productImages')
       .where('LOWER(tag.name) = LOWER(:tag)', { tag })
       .orderBy(`product.${sortBy}`, sortOrder as 'ASC' | 'DESC')
       .take(limit)
@@ -170,15 +149,15 @@ export class ProductsService {
       throw new NotFoundException(
         `No se encontraron productos con el tag '${tag}'`,
       );
-    return products;
+    return products.map((product) => this.mapProductResponse(product));
   }
 
   async update(id: string, updateProductDto: UpdateProductDto, user: User) {
-    const { imagesName, categoryId, tagIds = [], ...toUpdate } = updateProductDto;
+    const { imageIds, categoryId, tagIds = [], ...toUpdate } = updateProductDto;
 
     const product = await this.productRepository.preload({ id, ...toUpdate });
     if (!product) {
-      throw new NotFoundException(`No se encontró el producto con id: '${id}'`);
+      throw new NotFoundException(`No se encontr?�³ el producto con id: '${id}'`);
     }
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -192,7 +171,7 @@ export class ProductsService {
           .findOneBy({ id: categoryId });
 
         if (!category) {
-          throw new NotFoundException(`No se encontró la categoría con id: '${categoryId}'`);
+          throw new NotFoundException(`No se encontr� la categor�a con id: '${categoryId}'`);
         }
 
         product.category = category;
@@ -210,10 +189,14 @@ export class ProductsService {
         product.tags = tags;
       }
 
-      if (imagesName) {
+      if (imageIds !== undefined) {
+        const imageFileNames: string[] =
+          imageIds.length > 0
+            ? this.fileService.getFileNamesFromIds(this.fileType, imageIds)
+            : [];
         await queryRunner.manager.delete(ProductImage, { product: { id } });
-        product.imagesName = imagesName.map((image) =>
-          this.productImageRepository.create({ url: image }),
+        product.images = imageFileNames.map((fileName) =>
+          this.productImageRepository.create({ url: fileName }),
         );
       }
 
@@ -224,8 +207,7 @@ export class ProductsService {
       await queryRunner.release();
 
       return this.findOnePlain(id);
-    } 
-    catch (error) {
+    } catch (error) {
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
       this.handleException(error);
@@ -242,7 +224,7 @@ export class ProductsService {
     const [products, totalProducts] = await this.productRepository
       .createQueryBuilder('product')
       .where('product.title ILIKE :q OR product.description ILIKE :q', { q: `%${query}%` })
-      .leftJoinAndSelect('product.imagesName', 'productImages')
+      .leftJoinAndSelect('product.images', 'productImages')
       .orderBy(`product.${sortBy}`, sortOrder as 'ASC' | 'DESC')
       .skip(offset)
       .take(limit)
@@ -251,26 +233,47 @@ export class ProductsService {
     return {
       count: totalProducts,
       pages: Math.ceil(totalProducts / limit),
-      products: products.map((product) => ({
-        ...product,
-        imagesName: product.imagesName?.map((img) => this.fileService.findOne(img.url)),
-      })),
+      products: products.map((product) => this.mapProductResponse(product)),
     };
   }
 
-  handleException(error: any) {
-    if (error?.status == HttpStatus.NOT_FOUND) throw error;
+  private mapProductResponse(product: Product): ProductWithImages {
+    const images =
+      product.images?.map((img) =>
+        this.fileService.getPublicUrl(this.fileType, img.url),
+      ) ?? [];
 
-    this.logger.error(error);
+    return {
+      ...(product as unknown as Omit<Product, 'images'>),
+      images,
+    } as ProductWithImages;
+  }
+
+  handleException(error: unknown) {
+    if (error instanceof NotFoundException) {
+      throw error;
+    }
+
+    if (error instanceof Error) {
+      this.logger.error(error.message, error.stack);
+    } else {
+      this.logger.error(`Error no controlado: ${JSON.stringify(error)}`);
+    }
 
     this.handleDBException(error);
     throw new InternalServerErrorException(
-      'Ocurrió un error inesperado. Por favor, verifique los logs',
+      'Ocurri� un error inesperado. Por favor, verifique los logs',
     );
   }
 
-  handleDBException(error: any) {
-    if (error.code === '23505') throw new BadRequestException(error.detail);
+  handleDBException(error: unknown) {
+    if (this.isPostgresError(error) && error.code === '23505') {
+      throw new BadRequestException(error.detail ?? 'Violaci�n de restricci�n �nica');
+    }
+  }
+
+  private isPostgresError(error: unknown): error is { code?: string; detail?: string } {
+    return typeof error === 'object' && error !== null && 'code' in error;
   }
 
   async removeAll() {
@@ -282,3 +285,6 @@ export class ProductsService {
     }
   }
 }
+
+
+

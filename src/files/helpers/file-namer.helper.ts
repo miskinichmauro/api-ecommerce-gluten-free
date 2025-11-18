@@ -1,4 +1,4 @@
-import type { Express } from 'express';
+﻿import type { Express } from 'express';
 import { normalizeSlug } from 'src/common/utils/util';
 
 export const fileNamer = (
@@ -14,7 +14,9 @@ export const fileNamer = (
   }
 
   const name = file.originalname.substring(0, lastDotIndex);
-  const fileName = `${normalizeSlug(name)}.${fileExtension}`;
+  const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 10_000)}`;
+  const fileName = `${normalizeSlug(name)}-${uniqueSuffix}.${fileExtension}`;
 
   callback(null, fileName);
 };
+

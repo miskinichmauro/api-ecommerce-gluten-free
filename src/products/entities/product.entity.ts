@@ -49,7 +49,7 @@ export class Product {
     cascade: true,
     eager: true,
   })
-  imagesName?: ProductImage[];
+  images?: ProductImage[];
 
   @ManyToOne(() => User, (user) => user.product, { eager: true })
   user: User;
