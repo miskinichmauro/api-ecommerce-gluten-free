@@ -38,7 +38,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Pan sin gluten de arroz',
     price: 25000,
-    unitOfMeasure: 'unidad',
     description: 'Pan artesanal hecho con harina de arroz, apto para celíacos.',
     slug: 'pan_sin_gluten_arroz',
     stock: 50,
@@ -49,7 +48,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Pan de mandioca sin gluten',
     price: 22000,
-    unitOfMeasure: 'unidad',
     description: 'Pan casero elaborado con fécula de mandioca.',
     slug: 'pan_mandioca_sin_gluten',
     stock: 40,
@@ -60,7 +58,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Galletas de maíz sin azúcar',
     price: 18000,
-    unitOfMeasure: 'paquete',
     description: 'Crujientes galletas de maíz libres de gluten y azúcar.',
     slug: 'galletas_maiz_sin_azucar',
     stock: 70,
@@ -71,7 +68,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Harina de arroz',
     price: 20000,
-    unitOfMeasure: 'kg',
     description: 'Harina 100% de arroz, ideal para panificados y repostería.',
     slug: 'harina_arroz',
     stock: 100,
@@ -82,7 +78,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Harina de almendras',
     price: 45000,
-    unitOfMeasure: 'kg',
     description: 'Harina fina de almendras, ideal para repostería sin gluten.',
     slug: 'harina_almendras',
     stock: 60,
@@ -93,7 +88,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Tortillas de maíz sin gluten',
     price: 15000,
-    unitOfMeasure: 'paquete',
     description: 'Tortillas frescas hechas con maíz, libres de gluten.',
     slug: 'tortillas_maiz_sin_gluten',
     stock: 80,
@@ -103,7 +97,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Pizza base sin gluten',
     price: 30000,
-    unitOfMeasure: 'unidad',
     description:
       'Base de pizza lista para hornear, hecha con harina sin gluten.',
     slug: 'pizza_base_sin_gluten',
@@ -114,7 +107,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Brownie sin gluten',
     price: 20000,
-    unitOfMeasure: 'unidad',
     description: 'Brownie de chocolate sin gluten ni azúcar.',
     slug: 'brownie_sin_gluten',
     stock: 55,
@@ -124,7 +116,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Cerveza sin gluten',
     price: 18000,
-    unitOfMeasure: 'botella',
     description: 'Cerveza artesanal apta para celíacos.',
     slug: 'cerveza_sin_gluten',
     stock: 90,
@@ -134,7 +125,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Pasta de arroz sin gluten',
     price: 25000,
-    unitOfMeasure: 'paquete',
     description: 'Pasta elaborada con arroz, libre de gluten.',
     slug: 'pasta_arroz_sin_gluten',
     stock: 75,
@@ -144,7 +134,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Fideos de quinoa sin gluten',
     price: 28000,
-    unitOfMeasure: 'paquete',
     description: 'Fideos saludables hechos con quinoa.',
     slug: 'fideos_quinoa_sin_gluten',
     stock: 60,
@@ -154,7 +143,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Galletas de coco sin gluten',
     price: 19000,
-    unitOfMeasure: 'paquete',
     description: 'Galletas dulces a base de coco, libres de gluten.',
     slug: 'galletas_coco_sin_gluten',
     stock: 80,
@@ -164,7 +152,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Cereal inflado de arroz sin gluten',
     price: 15000,
-    unitOfMeasure: 'bolsa',
     description: 'Cereal crocante a base de arroz inflado.',
     slug: 'cereal_arroz_sin_gluten',
     stock: 100,
@@ -174,7 +161,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Muffin de banana sin gluten',
     price: 22000,
-    unitOfMeasure: 'unidad',
     description:
       'Muffin casero elaborado con harina sin gluten y banana madura.',
     slug: 'muffin_banana_sin_gluten',
@@ -185,7 +171,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Barra de granola sin gluten',
     price: 12000,
-    unitOfMeasure: 'unidad',
     description: 'Barra energética con granola y miel, libre de gluten.',
     slug: 'barra_granola_sin_gluten',
     stock: 200,
@@ -195,7 +180,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Pan de quinoa sin gluten',
     price: 27000,
-    unitOfMeasure: 'unidad',
     description: 'Pan integral elaborado con harina de quinoa.',
     slug: 'pan_quinoa_sin_gluten',
     stock: 30,
@@ -205,7 +189,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Galletas de avena certificada sin gluten',
     price: 21000,
-    unitOfMeasure: 'paquete',
     description: 'Galletas dulces con avena certificada sin gluten.',
     slug: 'galletas_avena_sin_gluten',
     stock: 60,
@@ -215,7 +198,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Cerveza artesanal de quinoa sin gluten',
     price: 20000,
-    unitOfMeasure: 'botella',
     description: 'Cerveza especial elaborada con quinoa.',
     slug: 'cerveza_quinoa_sin_gluten',
     stock: 70,
@@ -225,7 +207,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Snacks de mandioca sin gluten',
     price: 15000,
-    unitOfMeasure: 'paquete',
     description: 'Crujientes chips de mandioca horneados.',
     slug: 'snacks_mandioca_sin_gluten',
     stock: 90,
@@ -235,7 +216,6 @@ export const initialProducts: SeedProduct[] = [
   {
     title: 'Pan de sarraceno sin gluten',
     price: 30000,
-    unitOfMeasure: 'unidad',
     description: 'Pan integral elaborado con harina de trigo sarraceno.',
     slug: 'pan_sarraceno_sin_gluten',
     stock: 50,

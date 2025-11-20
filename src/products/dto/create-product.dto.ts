@@ -21,9 +21,6 @@ export class CreateProductDto {
   price?: number;
 
   @IsString()
-  unitOfMeasure: string;
-
-  @IsString()
   @IsOptional()
   description?: string;
 

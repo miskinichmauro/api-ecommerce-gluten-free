@@ -27,9 +27,6 @@ export class Product {
   @Column({ type: 'float', default: 0 })
   price: number;
 
-  @Column({ type: 'text', default: 'unidad' })
-  unitOfMeasure: string;
-
   @Column('text', { nullable: true })
   description?: string;
 
@@ -57,7 +54,7 @@ export class Product {
   @ManyToOne(() => Category, (category) => category.products, { eager: true, nullable: false })
   category: Category;
 
-  @ManyToMany(() => Tag, (tag) => tag.products, { cascade: true, eager: true })
+  @ManyToMany(() => Tag, (tag) => tag.products, { eager: true })
   @JoinTable({
     name: 'product_tags',
     joinColumn: { name: 'product_id' },

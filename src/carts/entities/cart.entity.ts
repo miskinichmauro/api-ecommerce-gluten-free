@@ -7,7 +7,10 @@ export class Cart {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, (user) => user.carts, { eager: true })
+  @ManyToOne(() => User, (user) => user.carts, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
   user: User;
 
   @OneToMany(() => CartItem, (item) => item.cart, {
