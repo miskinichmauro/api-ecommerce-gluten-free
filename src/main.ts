@@ -21,13 +21,7 @@ async function bootstrap() {
   ];
 
   app.enableCors({
-    origin: (origin: string, callback: (arg0: Error | null, arg1: boolean) => void) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('CORS no permitido'), false);
-      }
-    },
+    origin: allowedOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
