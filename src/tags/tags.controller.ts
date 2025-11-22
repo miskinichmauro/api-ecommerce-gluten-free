@@ -16,7 +16,6 @@ export class TagsController {
 
   @Get()
   findAll(@Query('categoryId') categoryId?: string): Promise<Tag[]> {
-    Logger.log(categoryId);
     const filters: GetAllTagsDto | undefined =
       typeof categoryId === 'string' ? { categoryId } : undefined;
     return this.tagsService.findAll(filters);

@@ -39,7 +39,13 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto, user: User) {
-    const { imageIds = [], categoryId, tagIds = [], ...productDetails } = createProductDto;
+    const {
+      imageIds = [],
+      imageFileNames = [],
+      categoryId,
+      tagIds = [],
+      ...productDetails
+    } = createProductDto;
     if (!categoryId) {
       throw new BadRequestException('Debe proporcionar una categoría para el producto.');
     }
@@ -57,14 +63,14 @@ export class ProductsService {
       }
     }
 
-    const imageFileNames: string[] =
+    const imageFileNamesResolved: string[] =
       imageIds.length > 0
         ? this.fileService.getFileNamesFromIds(this.fileType, imageIds)
-        : [];
+        : imageFileNames;
 
     const newProduct = this.productRepository.create({
       ...productDetails,
-      images: imageFileNames.map((fileName) =>
+      images: imageFileNamesResolved.map((fileName) =>
         this.productImageRepository.create({ fileName }),
       ),
       user,

@@ -43,6 +43,11 @@ export class CreateProductDto {
   @IsOptional()
   imageIds?: string[];
 
+  @IsString({ each: true })
+  @IsArray()
+  @IsOptional()
+  imageFileNames?: string[];
+
   @IsArray()
   @IsUUID('4', { each: true })
   @IsOptional()

@@ -30,7 +30,7 @@ import { CategoriesModule } from './categories/categories.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       autoLoadEntities: true,
-      synchronize: process.env.TYPEORM_SYNC === 'true',
+      synchronize: true,
     }),
     ProductsModule,
     CommonModule,
