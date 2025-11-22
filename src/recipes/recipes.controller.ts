@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { RecipesService } from './recipes.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
@@ -18,6 +18,12 @@ export class RecipesController {
   @ApiOperation({ summary: 'Obtiene todas las recetas' })
   findAll() {
     return this.recipesService.findAll();
+  }
+
+  @Get('filter')
+  @ApiOperation({ summary: 'Filtra recetas por ingredientes' })
+  filter(@Query('ingredients') ingredients: string) {
+    return this.recipesService.filterByIngredients(ingredients);
   }
 
   @Get(':id')

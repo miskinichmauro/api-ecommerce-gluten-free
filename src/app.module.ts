@@ -13,6 +13,7 @@ import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { TagsModule } from './tags/tags.module';
 import { CategoriesModule } from './categories/categories.module';
+import { IngredientsModule } from './ingredients/ingredients.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { CategoriesModule } from './categories/categories.module';
     RolesModule,
     TagsModule,
     CategoriesModule,
+    IngredientsModule,
   ],
   providers: [],
 })

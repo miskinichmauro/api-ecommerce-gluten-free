@@ -10,6 +10,7 @@ import { UsersModule } from 'src/users/users.module';
 import { RolesModule } from 'src/roles/roles.module';
 import { CategoriesModule } from 'src/categories/categories.module';
 import { TagsModule } from 'src/tags/tags.module';
+import { IngredientsModule } from 'src/ingredients/ingredients.module';
 
 @Module({
   controllers: [SeedController],
@@ -24,6 +25,7 @@ import { TagsModule } from 'src/tags/tags.module';
     RolesModule,
     CategoriesModule,
     TagsModule,
+    IngredientsModule,
   ],
 })
 export class SeedModule {}

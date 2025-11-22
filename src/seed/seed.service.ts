@@ -24,6 +24,7 @@ import { UsersService } from 'src/users/users.service';
 import { RolesService } from 'src/roles/roles.service';
 import { CategoriesService } from 'src/categories/categories.service';
 import { TagsService } from 'src/tags/tags.service';
+import { IngredientsService } from 'src/ingredients/ingredients.service';
 
 @Injectable()
 export class SeedService {
@@ -37,6 +38,7 @@ export class SeedService {
     private readonly rolesService: RolesService,
     private readonly categoriesService: CategoriesService,
     private readonly tagsService: TagsService,
+    private readonly ingredientsService: IngredientsService,
   ) {}
 
   async executeSeed(apiKey: string) {
@@ -90,6 +92,7 @@ export class SeedService {
     await this.rolesService.removeAll();
     await this.tagsService.removeAll();
     await this.categoriesService.removeAll();
+    await this.ingredientsService.removeAll();
   }
 
   private insertCategories() {
