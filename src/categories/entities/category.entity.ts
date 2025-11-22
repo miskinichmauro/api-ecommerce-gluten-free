@@ -9,6 +9,12 @@ export class Category {
   @Column('text')
   name: string;
 
+  @Column('text')
+  description: string;
+
+  @Column({ type: 'bool', default: false })
+  isFeatured: boolean;
+
   @OneToMany(() => Product, (product) => product.category)
   products: Product[];
 }

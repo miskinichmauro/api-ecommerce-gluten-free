@@ -12,13 +12,41 @@ type SeedProduct = Omit<CreateProductDto, 'categoryId' | 'tagIds'> & {
 };
 
 export const initialCategories: CreateCategoryDto[] = [
-  { name: 'Panificados sin gluten' },
-  { name: 'Harinas y premezclas' },
-  { name: 'Snacks saludables' },
-  { name: 'Bebidas sin gluten' },
-  { name: 'Pastas y granos' },
-  { name: 'Reposteria sin gluten' },
-  { name: 'Desayunos y cereales' },
+  {
+    name: 'Panificados sin gluten',
+    description: 'Panes, tortillas y bases listas libres de gluten.',
+    isFeatured: true,
+  },
+  {
+    name: 'Harinas y premezclas',
+    description: 'Harinas alternativas y mixes listos para hornear.',
+    isFeatured: true,
+  },
+  {
+    name: 'Snacks saludables',
+    description: 'Opciones rápidas, crocantes y nutritivas.',
+    isFeatured: true,
+  },
+  {
+    name: 'Bebidas sin gluten',
+    description: 'Cervezas, bebidas y opciones libres de gluten.',
+    isFeatured: true,
+  },
+  {
+    name: 'Pastas y granos',
+    description: 'Pastas y granos aptos para celíacos.',
+    isFeatured: false,
+  },
+  {
+    name: 'Reposteria sin gluten',
+    description: 'Dulces y postres pensados para intolerancias.',
+    isFeatured: false,
+  },
+  {
+    name: 'Desayunos y cereales',
+    description: 'Cereales, granolas y opciones para empezar el día.',
+    isFeatured: false,
+  },
 ];
 
 export const initialTags: CreateTagDto[] = [
