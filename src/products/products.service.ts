@@ -1,5 +1,4 @@
-﻿/* cspell:ignore categor�a ILIKE */
-import {
+﻿import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
