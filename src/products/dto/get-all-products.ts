@@ -18,9 +18,20 @@ export class GetAllProductsDto extends ProductsListQueryDto {
   categoryId?: string;
 
   @IsOptional()
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.split(',').filter(Boolean) : value,
-  )
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value
+        .split(',')
+        .map((v) => v.trim())
+        .filter((v): v is string => v.length > 0);
+    }
+    if (Array.isArray(value)) {
+      return (value as unknown[])
+        .map((v) => (typeof v === 'string' ? v.trim() : v))
+        .filter((v): v is string => typeof v === 'string' && v.length > 0);
+    }
+    return undefined;
+  })
   @IsArray()
   @IsUUID(4, { each: true })
   tagIds?: string[];
