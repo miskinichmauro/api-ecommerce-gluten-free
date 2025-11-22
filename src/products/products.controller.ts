@@ -16,7 +16,6 @@ import { User } from 'src/auth/entities/user.entity';
 import { Auth, GetUser } from 'src/auth/decorators';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GetAllProductsDto } from './dto/get-all-products';
-import { ProductsListQueryDto } from './dto/products-list-query.dto';
 import { Roles } from 'src/auth/enums/role.enum';
 import { SearchProductsDto } from 'src/common/dto/searchProducts.dto';
 
@@ -46,8 +45,7 @@ export class ProductsController {
     summary: 'Devuelve todos los productos existentes paginados',
   })
   async findAll(@Query() getAllProductsDto: GetAllProductsDto) {
-    const isFeatured = getAllProductsDto.isFeatured === 'true';
-    return await this.productsService.findAll(getAllProductsDto, isFeatured);
+    return await this.productsService.findAll(getAllProductsDto);
   }
 
   @Get('search')
@@ -67,17 +65,6 @@ export class ProductsController {
   }
 
   @Get('tags/:tag')
-  @ApiOperation({
-    summary: 'Devuelve todos los productos por Tag paginado',
-  })
-  async findByTags(@Param('tag') tag: string, @Query() paginationDto: ProductsListQueryDto) {
-    try {
-      return await this.productsService.findByTag(tag, paginationDto);
-    } catch (error) {
-      this.productsService.handleException(error);
-    }
-  }
-
   @Patch(':id')
   @Auth(Roles.Admin)
   @ApiOperation({

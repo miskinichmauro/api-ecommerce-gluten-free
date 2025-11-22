@@ -12,7 +12,6 @@ import { validate as isUUId } from 'uuid';
 
 import { CreateProductDto, UpdateProductDto } from './dto';
 import { GetAllProductsDto } from './dto/get-all-products';
-import { ProductsListQueryDto } from './dto/products-list-query.dto';
 import { ProductImage } from './entities';
 import { Product } from './entities/product.entity';
 import { SearchProductsDto } from 'src/common/dto/searchProducts.dto';
@@ -79,21 +78,40 @@ export class ProductsService {
   }
 
 
-  async findAll(paginationDto: GetAllProductsDto, isFeatured?: boolean) {
-    const { limit = 10, offset = 0, sortBy = 'title', sortOrder = 'ASC' } = paginationDto;
+  async findAll(paginationDto: GetAllProductsDto) {
+    const {
+      limit = 10,
+      offset = 0,
+      sortBy = 'title',
+      sortOrder = 'ASC',
+      isFeatured,
+      categoryId,
+      tagIds = [],
+    } = paginationDto;
 
-    const where = isFeatured === true
-      ? { isFeatured: true } 
-      : {};
-    const [products, totalProducts] = await this.productRepository.findAndCount({
-      where,
-      take: limit,
-      skip: offset,
-      order: { [sortBy]: sortOrder },
-      relations: {
-        images: true,
-      },
-    });
+    const queryBuilder = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.images', 'images')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.tags', 'tags')
+      .orderBy(`product.${sortBy}`, sortOrder as 'ASC' | 'DESC')
+      .skip(offset)
+      .take(limit)
+      .distinct(true);
+
+    if (isFeatured !== undefined) {
+      queryBuilder.andWhere('product.isFeatured = :isFeatured', { isFeatured });
+    }
+
+    if (categoryId) {
+      queryBuilder.andWhere('category.id = :categoryId', { categoryId });
+    }
+
+    if (tagIds.length > 0) {
+      queryBuilder.andWhere('tags.id IN (:...tagIds)', { tagIds });
+    }
+
+    const [products, totalProducts] = await queryBuilder.getManyAndCount();
 
     return {
       count: totalProducts,
@@ -131,25 +149,6 @@ export class ProductsService {
     const product = await this.findOne(param);
 
     return this.mapProductResponse(product);
-  }
-
-  async findByTag(tag: string, paginationDto: ProductsListQueryDto) {
-    const { limit = 10, offset = 0, sortBy = 'title', sortOrder = 'ASC' } = paginationDto;
-    const queryBuilder = this.productRepository.createQueryBuilder('product');
-    const products = await queryBuilder
-      .leftJoin('product.tags', 'tag')
-      .leftJoinAndSelect('product.images', 'productImages')
-      .where('LOWER(tag.name) = LOWER(:tag)', { tag })
-      .orderBy(`product.${sortBy}`, sortOrder as 'ASC' | 'DESC')
-      .take(limit)
-      .skip(offset)
-      .getMany();
-
-    if (products.length == 0)
-      throw new NotFoundException(
-        `No se encontraron productos con el tag '${tag}'`,
-      );
-    return products.map((product) => this.mapProductResponse(product));
   }
 
   async update(id: string, updateProductDto: UpdateProductDto, user: User) {
