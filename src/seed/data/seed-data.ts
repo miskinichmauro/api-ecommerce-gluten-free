@@ -154,6 +154,18 @@ export const initialProducts: SeedProduct[] = [
     tagNames: ['Desayuno', 'Snack saludable'],
   },
   {
+    title: 'Michelob Ultra Sin Gluten',
+    price: 5500,
+    description:
+      'Michelob Ultra Sin Gluten es una cerveza ligera, refrescante y baja en calorías, perteneciente al estilo American Lager. Se elabora con malta de cebada y lúpulo de alta calidad, pero utiliza una enzima en el proceso de producción para reducir el contenido de gluten. Su sabor es suave y su color es rubio característico.',
+    slug: 'michelob-ultra-sin-gluten',
+    stock: 24,
+    isFeatured: true,
+    categoryName: 'Bebidas sin gluten',
+    imageFileNames: ['michelob-ultra-1763909020962-5112.png'],
+    tagNames: [],
+  },
+  {
     title: 'Alfajorcitos tipo macaron sin gluten',
     price: 10000,
     description:
