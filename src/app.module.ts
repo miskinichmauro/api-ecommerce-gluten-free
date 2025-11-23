@@ -15,6 +15,7 @@ import { TagsModule } from './tags/tags.module';
 import { CategoriesModule } from './categories/categories.module';
 import { IngredientsModule } from './ingredients/ingredients.module';
 import { PromotionsModule } from './promotions/promotions.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { PromotionsModule } from './promotions/promotions.module';
     CategoriesModule,
     IngredientsModule,
     PromotionsModule,
+    MailModule,
   ],
   providers: [],
 })

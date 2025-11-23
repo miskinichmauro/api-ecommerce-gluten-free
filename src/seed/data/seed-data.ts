@@ -251,17 +251,17 @@ export const initialContacts: CreateContactDto[] = [
   {
     title: 'Administrador',
     phone: '+595981012345',
-    email: 'administrador@egf.com',
-  },
-  {
-    title: 'Delivery',
-    phone: '+595981012345',
-    email: 'delivery@egf.com',
+    email: 'administrador@glutenfree.com',
   },
   {
     title: 'Atención al cliente',
     phone: '+595981012345',
-    email: 'atc@egf.com',
+    email: 'atc@glutenfree.com',
+  },
+  {
+    title: 'Delivery',
+    phone: '+595981012345',
+    email: 'delivery@glutenfree.com',
   },
 ];
 
