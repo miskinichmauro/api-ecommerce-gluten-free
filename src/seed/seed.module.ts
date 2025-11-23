@@ -11,6 +11,7 @@ import { RolesModule } from 'src/roles/roles.module';
 import { CategoriesModule } from 'src/categories/categories.module';
 import { TagsModule } from 'src/tags/tags.module';
 import { IngredientsModule } from 'src/ingredients/ingredients.module';
+import { CartsModule } from 'src/carts/carts.module';
 
 @Module({
   controllers: [SeedController],
@@ -26,6 +27,7 @@ import { IngredientsModule } from 'src/ingredients/ingredients.module';
     CategoriesModule,
     TagsModule,
     IngredientsModule,
+    CartsModule,
   ],
 })
 export class SeedModule {}

@@ -86,7 +86,12 @@ export class RecipesService {
   }
 
   async removeAll() {
-    await this.recipeIngredientRepository.delete({});
+    await this.recipeIngredientRepository
+      .createQueryBuilder()
+      .delete()
+      .where({})
+      .execute();
+
     await this.recipeRepository.createQueryBuilder('recipe').delete().where({}).execute();
   }
 

@@ -281,11 +281,39 @@ export class ProductsService {
   }
 
   async removeAll() {
-    const query = this.productRepository.createQueryBuilder('product');
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      return await query.delete().where({}).execute();
+      await queryRunner.manager
+        .createQueryBuilder()
+        .delete()
+        .from('product_tags')
+        .where({})
+        .execute();
+
+      await queryRunner.manager
+        .createQueryBuilder()
+        .delete()
+        .from(ProductImage)
+        .where({})
+        .execute();
+
+      await queryRunner.manager
+        .createQueryBuilder()
+        .delete()
+        .from(Product)
+        .where({})
+        .execute();
+
+      await queryRunner.commitTransaction();
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       this.handleDBException(error);
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
   }
 }

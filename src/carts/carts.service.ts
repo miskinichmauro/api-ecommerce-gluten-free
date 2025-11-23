@@ -81,4 +81,9 @@ export class CartsService {
     await this.cartRepository.save(cart);
     return cart;
   }
+
+  async removeAll() {
+    await this.cartItemRepository.createQueryBuilder().delete().where({}).execute();
+    await this.cartRepository.createQueryBuilder().delete().where({}).execute();
+  }
 }

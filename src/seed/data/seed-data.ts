@@ -5,11 +5,16 @@ import { CreateRecipeDto } from 'src/recipes/dto/create-recipe.dto';
 import { CreateRoleDto } from 'src/roles/dto/create-role.dto';
 import { CreateCategoryDto } from 'src/categories/dto/create-category.dto';
 import { CreateTagDto } from 'src/tags/dto/create-tag.dto';
+import { CreateIngredientDto } from 'src/ingredients/dto/create-ingredient.dto';
 
 type SeedProduct = Omit<CreateProductDto, 'categoryId' | 'tagIds'> & {
   categoryName: string;
   tagNames?: string[];
   imageFileNames?: string[];
+};
+
+type SeedRecipe = Omit<CreateRecipeDto, 'ingredientIds'> & {
+  ingredientNames?: string[];
 };
 
 export const initialCategories: CreateCategoryDto[] = [
@@ -177,26 +182,56 @@ export const initialUsers: CreateUserDto[] = [
   },
 ];
 
-export const initialRecipes: CreateRecipeDto[] = [
+export const initialRecipes: SeedRecipe[] = [
   {
     title: 'Ensalada Mediterránea sin gluten',
     text: `Lava y corta en mitades 200 g de tomates cherry y 1 pepino en rodajas finas. Añade 100 g de aceitunas negras, 80 g de queso feta en cubos y media cebolla morada en julianas. 
       Aliña con 3 cucharadas de aceite de oliva, el jugo de medio limón, sal y orégano seco al gusto. 
-      Mezcla suavemente y sirve fresca. Es una receta ligera, rápida y naturalmente libre de gluten.`
+      Mezcla suavemente y sirve fresca. Es una receta ligera, rápida y naturalmente libre de gluten.`,
+    ingredientNames: [
+      'Tomate cherry',
+      'Pepino',
+      'Aceitunas negras',
+      'Queso feta',
+      'Cebolla morada',
+      'Aceite de oliva',
+      'Limon',
+      'Sal',
+      'Oregano seco',
+    ],
   },
   {
     title: 'Pollo al horno con especias',
     text: `Coloca 4 pechugas de pollo en un recipiente y marínalas con 3 dientes de ajo picados, 1 cucharada de pimentón dulce, 1 cucharadita de comino, sal, pimienta, el jugo de 1 limón y 3 cucharadas de aceite de oliva. 
       Deja reposar al menos 30 minutos (idealmente 2 horas). 
       Precalienta el horno a 200°C y hornea durante 25-30 minutos, hasta que el pollo esté dorado por fuera y jugoso por dentro. 
-      Se puede acompañar con vegetales asados o una ensalada fresca.`
+      Se puede acompañar con vegetales asados o una ensalada fresca.`,
+    ingredientNames: [
+      'Pechuga de pollo',
+      'Ajo',
+      'Pimenton dulce',
+      'Comino',
+      'Sal',
+      'Pimienta',
+      'Limon',
+      'Aceite de oliva',
+    ],
   },
   {
     title: 'Brownies de harina de almendra',
     text: `Precalienta el horno a 180°C. En un bol, mezcla 1 taza de harina de almendra, 1/2 taza de cacao en polvo sin azúcar, 1/2 cucharadita de polvo de hornear y una pizca de sal. 
       En otro recipiente, bate 3 huevos con 1/2 taza de miel o sirope de agave y 1/3 taza de aceite de coco derretido. 
       Une ambas mezclas hasta obtener una masa homogénea y vierte en un molde engrasado. 
-      Hornea durante 25 minutos. Deja enfriar antes de cortar en cuadrados. ¡Un postre esponjoso y sin gluten!`
+      Hornea durante 25 minutos. Deja enfriar antes de cortar en cuadrados. ¡Un postre esponjoso y sin gluten!`,
+    ingredientNames: [
+      'Harina de almendra',
+      'Cacao en polvo',
+      'Polvo de hornear',
+      'Sal',
+      'Huevos',
+      'Miel',
+      'Aceite de coco',
+    ],
   },
 ];
 
@@ -204,18 +239,18 @@ export const initialContacts: CreateContactDto[] = [
   {
     title: 'Administrador',
     phone: '+595981012345',
-    email: 'administrador@egf.com'
+    email: 'administrador@egf.com',
   },
   {
     title: 'Delivery',
     phone: '+595981012345',
-    email: 'delivery@egf.com'
+    email: 'delivery@egf.com',
   },
   {
     title: 'Atención al cliente',
     phone: '+595981012345',
-    email: 'atc@egf.com'
-  }
+    email: 'atc@egf.com',
+  },
 ];
 
 export const initialRoles: CreateRoleDto[] = [
@@ -230,5 +265,28 @@ export const initialRoles: CreateRoleDto[] = [
   {
     name: 'Delivery',
     description: 'Encargado de repartir los pedidos',
-  }
+  },
+];
+
+export const initialIngredients: CreateIngredientDto[] = [
+  { name: 'Aceite de coco' },
+  { name: 'Aceite de oliva' },
+  { name: 'Aceitunas negras' },
+  { name: 'Ajo' },
+  { name: 'Cacao en polvo' },
+  { name: 'Cebolla morada' },
+  { name: 'Comino' },
+  { name: 'Harina de almendra' },
+  { name: 'Huevos' },
+  { name: 'Limon' },
+  { name: 'Miel' },
+  { name: 'Oregano seco' },
+  { name: 'Pimienta' },
+  { name: 'Pechuga de pollo' },
+  { name: 'Pepino' },
+  { name: 'Pimenton dulce' },
+  { name: 'Polvo de hornear' },
+  { name: 'Queso feta' },
+  { name: 'Sal' },
+  { name: 'Tomate cherry' },
 ];

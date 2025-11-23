@@ -12,6 +12,7 @@ import {
   initialCategories,
   initialContacts,
   initialProducts,
+  initialIngredients,
   initialRecipes,
   initialRoles,
   initialTags,
@@ -25,6 +26,7 @@ import { RolesService } from 'src/roles/roles.service';
 import { CategoriesService } from 'src/categories/categories.service';
 import { TagsService } from 'src/tags/tags.service';
 import { IngredientsService } from 'src/ingredients/ingredients.service';
+import { CartsService } from 'src/carts/carts.service';
 
 @Injectable()
 export class SeedService {
@@ -39,6 +41,7 @@ export class SeedService {
     private readonly categoriesService: CategoriesService,
     private readonly tagsService: TagsService,
     private readonly ingredientsService: IngredientsService,
+    private readonly cartsService: CartsService,
   ) {}
 
   async executeSeed(apiKey: string) {
@@ -66,18 +69,20 @@ export class SeedService {
     const emailAdmin = initialUsers[0].email;
     const user = await this.userService.findOne(emailAdmin);
 
-    const [categories, tags] = await Promise.all([
+    const [categories, tags, ingredients] = await Promise.all([
       this.insertCategories(),
       this.insertTags(),
+      this.insertIngredients(),
     ]);
 
     const categoriesMap = new Map(categories.map((category) => [category.name, category.id]));
     const tagsMap = new Map(tags.map((tag) => [tag.name, tag.id]));
+    const ingredientsMap = new Map(ingredients.map((ingredient) => [ingredient.name, ingredient.id]));
 
     await Promise.all([
       this.insertProducts(user, categoriesMap, tagsMap),
       this.insertContacts(),
-      this.insertRecipes(),
+      this.insertRecipes(ingredientsMap),
       this.insertRoles(),
     ]);
 
@@ -85,6 +90,7 @@ export class SeedService {
   }
 
   private async deleteTables() {
+    await this.cartsService.removeAll();
     await this.productsService.removeAll();
     await this.contactService.removeAll();
     await this.recipeService.removeAll();
@@ -104,6 +110,12 @@ export class SeedService {
   private insertTags() {
     return Promise.all(
       initialTags.map((tag) => this.tagsService.create(tag)),
+    );
+  }
+
+  private insertIngredients() {
+    return Promise.all(
+      initialIngredients.map((ingredient) => this.ingredientsService.create(ingredient)),
     );
   }
 
@@ -155,9 +167,24 @@ export class SeedService {
     );
   }
 
-  private insertRecipes() {
+  private insertRecipes(ingredientsMap: Map<string, string>) {
     return Promise.all(
-      initialRecipes.map((recipe) => this.recipeService.create(recipe)),
+      initialRecipes.map(({ ingredientNames = [], ...recipe }) => {
+        const ingredientIds = ingredientNames.map((ingredientName) => {
+          const ingredientId = ingredientsMap.get(ingredientName);
+          if (!ingredientId) {
+            throw new NotFoundException(
+              `No se encontro el ingrediente '${ingredientName}' para la receta '${recipe.title}'`,
+            );
+          }
+          return ingredientId;
+        });
+
+        return this.recipeService.create({
+          ...recipe,
+          ingredientIds,
+        });
+      }),
     );
   }
 
