@@ -1,4 +1,4 @@
-﻿import {
+import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
@@ -47,12 +47,12 @@ export class ProductsService {
       ...productDetails
     } = createProductDto;
     if (!categoryId) {
-      throw new BadRequestException('Debe proporcionar una categoría para el producto.');
+      throw new BadRequestException('Debe proporcionar una categoria para el producto.');
     }
 
     const category = await this.dataSource.getRepository(Category).findOneBy({ id: categoryId });
     if (!category) {
-      throw new NotFoundException(`No se encontró la categoría con id: ${categoryId}`);
+      throw new NotFoundException(`No se encontro la categoria con id: ${categoryId}`);
     }
 
     let tags: Tag[] | null = null;
@@ -81,7 +81,6 @@ export class ProductsService {
     await this.productRepository.save(newProduct);
     return this.mapProductResponse(newProduct);
   }
-
 
   async findAll(paginationDto: GetAllProductsDto) {
     const {
@@ -126,26 +125,27 @@ export class ProductsService {
   }
 
   async findOne(param: string) {
-    let product: Product | null;
+    const isId = isUUId(param);
 
-    if (isUUId(param)) {
-      product = await this.productRepository.findOne({
-        where: { id: param },
-        relations: { images: true },
-      });
+    const queryBuilder = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.images', 'images')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.tags', 'tags');
+
+    if (isId) {
+      queryBuilder.where('product.id = :id', { id: param });
     } else {
-      const queryBuilder = this.productRepository.createQueryBuilder('product');
-      product = await queryBuilder
-        .where('LOWER(title) = LOWER(:title) or slug = LOWER(:slug)', {
-          title: param,
-          slug: param,
-        })
-        .leftJoinAndSelect('product.images', 'productImages')
-        .getOne();
+      queryBuilder.where('LOWER(product.title) = LOWER(:title) or product.slug = LOWER(:slug)', {
+        title: param,
+        slug: param,
+      });
     }
 
+    const product = await queryBuilder.getOne();
+
     if (!product) {
-      throw new NotFoundException(`No se encontró el producto: '${param}'`);
+      throw new NotFoundException(`No se encontro el producto: '${param}'`);
     }
     return product;
   }
@@ -161,7 +161,7 @@ export class ProductsService {
 
     const product = await this.productRepository.preload({ id, ...toUpdate });
     if (!product) {
-      throw new NotFoundException(`No se encontró el producto con id: '${id}'`);
+      throw new NotFoundException(`No se encontro el producto con id: '${id}'`);
     }
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -175,16 +175,14 @@ export class ProductsService {
           .findOneBy({ id: categoryId });
 
         if (!category) {
-          throw new NotFoundException(`No se encontró la categoría con id: '${categoryId}'`);
+          throw new NotFoundException(`No se encontro la categoria con id: '${categoryId}'`);
         }
 
         product.category = category;
       }
 
       if (tagIds.length > 0) {
-        const tags = await queryRunner.manager
-          .getRepository(Tag)
-          .findBy({ id: In(tagIds) });
+        const tags = await queryRunner.manager.getRepository(Tag).findBy({ id: In(tagIds) });
 
         if (tags.length !== tagIds.length) {
           throw new NotFoundException(`Algunos tags no existen en la base de datos.`);
@@ -195,9 +193,7 @@ export class ProductsService {
 
       if (imageIds !== undefined) {
         const imageFileNames: string[] =
-          imageIds.length > 0
-            ? this.fileService.getFileNamesFromIds(this.fileType, imageIds)
-            : [];
+          imageIds.length > 0 ? this.fileService.getFileNamesFromIds(this.fileType, imageIds) : [];
         await queryRunner.manager.delete(ProductImage, { product: { id } });
         product.images = imageFileNames.map((fileName) =>
           this.productImageRepository.create({ fileName }),
@@ -229,6 +225,8 @@ export class ProductsService {
       .createQueryBuilder('product')
       .where('product.title ILIKE :q OR product.description ILIKE :q', { q: `%${query}%` })
       .leftJoinAndSelect('product.images', 'productImages')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.tags', 'tags')
       .orderBy(`product.${sortBy}`, sortOrder as 'ASC' | 'DESC')
       .skip(offset)
       .take(limit)
@@ -266,13 +264,13 @@ export class ProductsService {
 
     this.handleDBException(error);
     throw new InternalServerErrorException(
-      'Ocurrió un error inesperado. Por favor, verifique los logs',
+      'Ocurrio un error inesperado. Por favor, verifique los logs',
     );
   }
 
   handleDBException(error: unknown) {
     if (this.isPostgresError(error) && error.code === '23505') {
-      throw new BadRequestException(error.detail ?? 'Violación de restricción única');
+      throw new BadRequestException(error.detail ?? 'Violacion de restriccion unica');
     }
   }
 
@@ -317,6 +315,3 @@ export class ProductsService {
     }
   }
 }
-
-
-

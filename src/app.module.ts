@@ -14,6 +14,7 @@ import { RolesModule } from './roles/roles.module';
 import { TagsModule } from './tags/tags.module';
 import { CategoriesModule } from './categories/categories.module';
 import { IngredientsModule } from './ingredients/ingredients.module';
+import { PromotionsModule } from './promotions/promotions.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { IngredientsModule } from './ingredients/ingredients.module';
     TagsModule,
     CategoriesModule,
     IngredientsModule,
+    PromotionsModule,
   ],
   providers: [],
 })
