@@ -2,9 +2,11 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestj
 import { RecipesService } from './recipes.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SearchRecipesDto } from './dto/search-recipes.dto';
 
 @Controller('recipes')
+@ApiTags('Recipes')
 export class RecipesController {
   constructor(private readonly recipesService: RecipesService) {}
 
@@ -20,10 +22,10 @@ export class RecipesController {
     return this.recipesService.findAll();
   }
 
-  @Get('filter')
-  @ApiOperation({ summary: 'Filtra recetas por ingredientes' })
-  filter(@Query('ingredients') ingredients: string) {
-    return this.recipesService.filterByIngredients(ingredients);
+  @Get('search')
+  @ApiOperation({ summary: 'Busca recetas por ingredientes' })
+  search(@Query() searchRecipesDto: SearchRecipesDto) {
+    return this.recipesService.filterByIngredients(searchRecipesDto);
   }
 
   @Get(':id')

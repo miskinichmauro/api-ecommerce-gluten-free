@@ -10,6 +10,10 @@ import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
 import { Ingredient } from 'src/ingredients/entities/ingredient.entity';
 import { RecipeIngredient } from './entities/recipe-ingredient.entity';
+import { SearchRecipesDto } from './dto/search-recipes.dto';
+
+type RankedRecipe = Recipe & { matchCount: number };
+type RawMatch = { id: string; matchCount: string | number };
 
 @Injectable()
 export class RecipesService {
@@ -95,14 +99,17 @@ export class RecipesService {
     await this.recipeRepository.createQueryBuilder('recipe').delete().where({}).execute();
   }
 
-  async filterByIngredients(rawIngredients: string) {
+  async filterByIngredients(searchRecipesDto: SearchRecipesDto) {
+    const { ingredients: rawIngredients, limit = 10, offset = 0 } = searchRecipesDto;
+    const safeLimit = Math.min(Math.max(limit, 1), 100);
+    const safeOffset = Math.max(offset ?? 0, 0);
     const normalized = rawIngredients
       ?.split(',')
       .map((name) => name.trim().toLowerCase())
       .filter((name) => name.length > 0);
 
     if (!normalized || normalized.length === 0) {
-      return { fullMatches: [], partialMatches: [] };
+      return { count: 0, pages: 0, recipes: [] };
     }
 
     const ingredients = await this.ingredientRepository
@@ -113,10 +120,14 @@ export class RecipesService {
     const ingredientIds = ingredients.map((ingredient) => ingredient.id);
 
     if (!ingredientIds.length) {
-      return { fullMatches: [], partialMatches: [] };
+      return { count: 0, pages: 0, recipes: [] };
     }
 
     const fullMatches = await this.findRecipesMatchingAll(ingredientIds);
+    const fullMatchesWithCount: RankedRecipe[] = fullMatches.map((recipe) => ({
+      ...recipe,
+      matchCount: ingredientIds.length,
+    }));
     const fullMatchIds = new Set(fullMatches.map((recipe) => recipe.id));
 
     const partialRaw = await this.recipeRepository
@@ -126,14 +137,20 @@ export class RecipesService {
       .select('recipe.id', 'id')
       .addSelect('COUNT(DISTINCT ri.ingredient_id)', 'matchCount')
       .groupBy('recipe.id')
-      .orderBy('matchCount', 'DESC')
+      .orderBy('"matchCount"', 'DESC')
       .addOrderBy('recipe.createdAt', 'DESC')
-      .getRawMany();
+      .getRawMany<RawMatch>();
 
-    const partialIds = partialRaw.filter((raw) => !fullMatchIds.has(raw.id)).map((raw) => raw.id);
+    const partialIds: string[] = partialRaw
+      .filter((raw) => !fullMatchIds.has(raw.id))
+      .map((raw) => raw.id);
 
     if (!partialIds.length) {
-      return { fullMatches, partialMatches: [] };
+      const ordered = [...fullMatchesWithCount];
+      const total = ordered.length;
+      const recipes = ordered.slice(safeOffset, safeOffset + safeLimit);
+      const pages = Math.ceil(total / safeLimit);
+      return { count: total, pages, recipes };
     }
 
     const partialRecipes = await this.recipeRepository.find({
@@ -141,16 +158,23 @@ export class RecipesService {
       relations: ['recipeIngredients', 'recipeIngredients.ingredient'],
     });
 
-    const matchCountMap = new Map(partialRaw.map((raw) => [raw.id, Number(raw.matchCount)]));
+    const matchCountMap = new Map<string, number>(
+      partialRaw.map((raw) => [raw.id, Number(raw.matchCount)]),
+    );
 
-    const partialMatches = partialRecipes
+    const partialMatches: RankedRecipe[] = partialRecipes
       .map((recipe) => ({
         ...recipe,
         matchCount: matchCountMap.get(recipe.id) ?? 0,
       }))
       .sort((a, b) => (b.matchCount ?? 0) - (a.matchCount ?? 0));
 
-    return { fullMatches, partialMatches };
+    const ordered: RankedRecipe[] = [...fullMatchesWithCount, ...partialMatches];
+    const total = ordered.length;
+    const recipes = ordered.slice(safeOffset, safeOffset + safeLimit);
+    const pages = Math.ceil(total / safeLimit);
+
+    return { count: total, pages, recipes };
   }
 
   private async findIngredientsByIds(ingredientIds: string[]) {
