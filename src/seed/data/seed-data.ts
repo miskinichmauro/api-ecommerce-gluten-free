@@ -177,6 +177,39 @@ export const initialProducts: SeedProduct[] = [
     imageFileNames: ['alfajorcitos-tipo-macaron-sin-gluten-1763616056107-5255.png'],
     tagNames: ['Gourmet', 'Sin lactosa'],
   },
+  {
+    title: 'Combo 15 % de descuento',
+    price: 143000,
+    description:
+      'Pack con todos los productos disponibles: fideos de arroz, pan sin gluten de arroz, galletitas de maiz sin azucar, harina de arroz, harina de almendras, brownie sin gluten, cereal inflado de arroz, cerveza Michelob Ultra sin gluten y alfajorcitos tipo macaron. Ideal para probar toda la tienda con 15 % de ahorro.',
+    slug: 'combo-15-descuento',
+    stock: 5,
+    isFeatured: true,
+    categoryName: 'Snacks saludables',
+    imageFileNames: [
+      'fideos-de-arroz-sin-gluten-1763615492352-4692.png',
+      'pan-sin-gluten-de-arroz-1763612629597-3833.png',
+      'galletas-de-ma-a-z-sin-az-a-car-1763613460738-8537.png',
+      'harina-de-arroz-1763613787009-8595.png',
+      'harina-de-almendras-1763613983691-5588.png',
+      'brownie-sin-gluten-1763614504178-847.png',
+      'cereal-inflado-de-arroz-sin-gluten-1763615763708-482.png',
+      'michelob-ultra-1763909020962-5112.png',
+      'alfajorcitos-tipo-macaron-sin-gluten-1763616056107-5255.png',
+    ],
+    tagNames: [
+      'Apto celiacos',
+      'Vegano',
+      'Sin lactosa',
+      'Sin azúcar',
+      'Alto en proteína',
+      'Rico en fibra',
+      'Snack saludable',
+      'Listo para hornear',
+      'Desayuno',
+      'Gourmet',
+    ],
+  },
 ];
 
 export const initialUsers: CreateUserDto[] = [
