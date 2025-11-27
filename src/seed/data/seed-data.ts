@@ -217,12 +217,14 @@ export const initialUsers: CreateUserDto[] = [
     email: 'admin-egf@gmail.com',
     password: 'Admin@123.',
     fullName: 'Administrador',
+    phone: '+595981000000',
     roles: ['Admin'],
   },
   {
     email: 'user-egf@gmail.com',
     password: 'User@123.',
     fullName: 'Usuario',
+    phone: '+595981000001',
     roles: ['User'],
   },
 ];

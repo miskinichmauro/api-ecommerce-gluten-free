@@ -9,6 +9,9 @@ import {
 } from 'typeorm';
 import { Product } from 'src/products/entities';
 import { Cart } from 'src/carts/entities/cart.entity';
+import { Address } from 'src/addresses/entities/address.entity';
+import { BillingProfile } from 'src/billing/entities/billing-profile.entity';
+import { Order } from 'src/orders/entities/order.entity';
 
 @Entity('users')
 export class User {
@@ -31,6 +34,12 @@ export class User {
   })
   fullName: string;
 
+  @Column({ type: 'text', nullable: true })
+  phone?: string;
+
+  @Column({ type: 'date', nullable: true })
+  birthDate?: Date;
+
   @Column({
     type: 'text',
     array: true,
@@ -46,6 +55,15 @@ export class User {
 
   @OneToMany(() => Cart, (cart) => cart.user)
   carts: Cart;
+
+  @OneToMany(() => Address, (address) => address.user)
+  addresses: Address[];
+
+  @OneToMany(() => BillingProfile, (billing) => billing.user)
+  billingProfiles: BillingProfile[];
+
+  @OneToMany(() => Order, (order) => order.user)
+  orders: Order[];
 
   @BeforeInsert()
   @BeforeUpdate()

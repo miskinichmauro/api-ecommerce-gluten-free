@@ -16,6 +16,9 @@ import { CategoriesModule } from './categories/categories.module';
 import { IngredientsModule } from './ingredients/ingredients.module';
 import { PromotionsModule } from './promotions/promotions.module';
 import { MailModule } from './mail/mail.module';
+import { AddressesModule } from './addresses/addresses.module';
+import { BillingModule } from './billing/billing.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -50,6 +53,9 @@ import { MailModule } from './mail/mail.module';
     IngredientsModule,
     PromotionsModule,
     MailModule,
+    AddressesModule,
+    BillingModule,
+    OrdersModule,
   ],
   providers: [],
 })

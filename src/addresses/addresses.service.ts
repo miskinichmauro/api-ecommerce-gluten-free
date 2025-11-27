@@ -1,0 +1,78 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/auth/entities/user.entity';
+import { Repository } from 'typeorm';
+import { CreateAddressDto } from './dto/create-address.dto';
+import { UpdateAddressDto } from './dto/update-address.dto';
+import { Address } from './entities/address.entity';
+
+@Injectable()
+export class AddressesService {
+  constructor(
+    @InjectRepository(Address)
+    private readonly addressRepository: Repository<Address>,
+  ) {}
+
+  async findAll(user: User) {
+    return this.addressRepository.find({
+      where: { user: { id: user.id } },
+      order: { isDefault: 'DESC', createdAt: 'DESC' },
+    });
+  }
+
+  async create(user: User, createAddressDto: CreateAddressDto) {
+    if (createAddressDto.isDefault) {
+      await this.clearDefault(user.id);
+    }
+
+    const address = this.addressRepository.create({
+      ...createAddressDto,
+      user,
+      isDefault: createAddressDto.isDefault ?? false,
+    });
+
+    return this.addressRepository.save(address);
+  }
+
+  async update(user: User, id: string, updateAddressDto: UpdateAddressDto) {
+    const address = await this.findOwned(user.id, id);
+
+    if (updateAddressDto.isDefault) {
+      await this.clearDefault(user.id, id);
+    }
+
+    Object.assign(address, updateAddressDto);
+    return this.addressRepository.save(address);
+  }
+
+  async remove(user: User, id: string) {
+    const address = await this.findOwned(user.id, id);
+    await this.addressRepository.remove(address);
+  }
+
+  private async findOwned(userId: string, id: string) {
+    const address = await this.addressRepository.findOne({
+      where: { id, user: { id: userId } },
+    });
+
+    if (!address) {
+      throw new NotFoundException('Direccion no encontrada');
+    }
+
+    return address;
+  }
+
+  private async clearDefault(userId: string, exceptId?: string) {
+    const query = this.addressRepository
+      .createQueryBuilder()
+      .update(Address)
+      .set({ isDefault: false })
+      .where('userId = :userId', { userId });
+
+    if (exceptId) {
+      query.andWhere('id != :exceptId', { exceptId });
+    }
+
+    await query.execute();
+  }
+}

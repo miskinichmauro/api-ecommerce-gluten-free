@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsDateString,
   IsEmail,
   IsOptional,
   IsString,
@@ -25,6 +26,16 @@ export class CreateUserDto {
   @IsString()
   @MinLength(1)
   fullName: string;
+
+  @IsString()
+  @IsOptional()
+  @MinLength(6)
+  @MaxLength(20)
+  phone?: string;
+
+  @IsOptional()
+  @IsDateString()
+  birthDate?: string;
 
   @IsArray()
   @IsOptional()
