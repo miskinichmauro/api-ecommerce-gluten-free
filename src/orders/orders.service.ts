@@ -71,11 +71,14 @@ export class OrdersService {
       0,
     );
 
+    const orderNumber = await this.generateOrderNumber();
+
     const order = this.orderRepository.create({
       user,
       items,
       shippingAddress,
       billingProfile,
+      orderNumber,
       total,
       status: 'pending',
       notes: checkoutDto.notes,
@@ -110,5 +113,27 @@ export class OrdersService {
     }
 
     return order;
+  }
+
+  private async generateOrderNumber(): Promise<string> {
+    const pad = (num: number) => num.toString().padStart(2, '0');
+    const date = new Date();
+    const y = date.getFullYear();
+    const m = pad(date.getMonth() + 1);
+    const d = pad(date.getDate());
+
+    for (let i = 0; i < 5; i++) {
+      const random = Math.floor(Math.random() * 10000)
+        .toString()
+        .padStart(4, '0');
+      const candidate = `ORD-${y}${m}${d}-${random}`;
+
+      const exists = await this.orderRepository.exist({
+        where: { orderNumber: candidate },
+      });
+      if (!exists) return candidate;
+    }
+
+    throw new BadRequestException('No se pudo generar el numero de pedido');
   }
 }
