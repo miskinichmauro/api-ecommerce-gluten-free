@@ -356,38 +356,40 @@ export class OrdersService {
     const billing = this.renderBillingBlock('Facturación', order.billingProfile);
 
     const html = `
-    <div style="font-family:Arial,Helvetica,sans-serif;background:#f5f7fb;padding:24px;color:#111827;">
-      <div style="max-width:700px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 8px 20px rgba(15,23,42,0.08);overflow:hidden;">
-        <div style="padding:24px 28px;border-bottom:1px solid #e5e7eb;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+    <div style="font-family:Arial,Helvetica,sans-serif;background:#eef2f7;padding:24px;color:#0f172a;">
+      <div style="max-width:700px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 18px 38px rgba(15,23,42,0.12);overflow:hidden;">
+        <div style="padding:28px 32px;border-bottom:1px solid #e5e7eb;background:#f8fafc;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
             <div>
-              <div style="color:#6b7280;font-size:13px;font-weight:600;letter-spacing:0.3px;">${order.orderNumber}</div>
-              <div style="font-size:22px;font-weight:700;color:#0f172a;margin-top:6px;text-transform:capitalize;">${order.status ?? 'pendiente'}</div>
-              <div style="color:#6b7280;font-size:13px;margin-top:4px;">${createdAt}</div>
+              <div style="font-size:12px;font-weight:600;letter-spacing:0.3px;color:#7c8895;">${order.orderNumber}</div>
+              <div style="font-size:24px;font-weight:700;color:#111827;margin-top:6px;text-transform:capitalize;">${order.status ?? 'pendiente'}</div>
+              <div style="font-size:13px;color:#6b7280;margin-top:4px;">${createdAt}</div>
             </div>
             <div style="text-align:right;">
-              <div style="font-size:14px;font-weight:600;color:#0ea5e9;margin-bottom:2px;">Gs.</div>
-              <div style="font-size:22px;font-weight:800;color:#0f172a;">${currency}</div>
+              <div style="font-size:14px;font-weight:600;color:#0ea5e9;">Total</div>
+              <div style="font-size:26px;font-weight:800;color:#0f172a;margin-top:4px;">${currency}</div>
             </div>
           </div>
         </div>
 
-        <div style="padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;border-bottom:1px solid #e5e7eb;">
+        <div style="padding:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;background:#fff;border-bottom:1px solid #e5e7eb;">
           ${shipping}
           ${billing}
         </div>
 
-        <div style="padding:20px 24px;">
-          <div style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:12px;">Productos</div>
+        <div style="padding:24px 28px;background:#fff;">
+          <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:12px;">Productos</div>
           <table style="width:100%;border-collapse:collapse;">
             <tbody>
               ${itemsRows}
             </tbody>
           </table>
-          <div style="margin-top:16px;text-align:right;font-weight:700;color:#0f172a;">Total: ${currency}</div>
+          <div style="margin-top:18px;text-align:right;font-size:16px;font-weight:700;color:#111827;">
+            <span style="opacity:0.7;">Total:</span>&nbsp;${currency}
+          </div>
         </div>
 
-        <div style="padding:18px 24px;background:#0ea5e9;color:#fff;text-align:center;font-weight:600;">
+        <div style="padding:18px 24px;background:#0ea5e9;color:#fff;text-align:center;font-weight:600;font-size:16px;">
           ¡Gracias por tu compra, ${user.fullName ?? user.email}!
         </div>
       </div>
