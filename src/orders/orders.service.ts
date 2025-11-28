@@ -43,6 +43,7 @@ type MappedOrder = Omit<Order, 'items' | 'shippingAddress' | 'billingProfile'> &
   items?: MappedOrderItem[];
   shippingAddress: Address | Record<string, any> | null;
   billingProfile: BillingProfile | Record<string, any> | null;
+  createdAtParaguay?: string;
 };
 
 @Injectable()
@@ -239,6 +240,7 @@ export class OrdersService {
   private mapOrderResponse(order: Order): MappedOrder {
     const shippingAddress = order.shippingAddress ?? order.shippingSnapshot ?? null;
     const billingProfile = order.billingProfile ?? order.billingSnapshot ?? null;
+    const createdAtParaguay = this.formatDateToParaguay(order.createdAt);
 
     const items: MappedOrderItem[] | undefined = order.items?.map((item) => {
       const product = this.mapProductWithImages(
@@ -260,6 +262,7 @@ export class OrdersService {
       shippingAddress,
       billingProfile,
       items,
+      createdAtParaguay,
     };
   }
 
@@ -327,24 +330,35 @@ export class OrdersService {
 
   private async sendOrderMail(user: User, order: MappedOrder) {
     const currency = this.formatCurrency(order.total);
-    const createdAt = new Date(order.createdAt).toLocaleString('es-PY', {
-      timeZone: 'America/Asuncion',
-    });
+    const createdAt = this.formatDateToParaguay(order.createdAt) ?? '';
     const itemsRows = order.items
       ?.map(
         (item) => `
         <tr>
-          <td style="padding:12px 0;">
-            <div style="display:flex;gap:12px;align-items:center;">
+          <td style="padding:14px 0;">
+            <div style="display:flex;gap:16px;align-items:flex-start;">
               ${this.renderProductImage(item.product?.images?.[0])}
               <div style="flex:1;">
                 <div style="font-weight:600;color:#0b1727;font-size:15px;">${item.product?.title ?? 'Producto'}</div>
-                <div style="color:#4b5563;font-size:13px;">${item.product?.description ?? ''}</div>
-                <div style="color:#111827;font-size:13px;margin-top:4px;">${item.quantity} x ${this.formatCurrency(item.unitPrice)}</div>
+                <div style="color:#4b5563;font-size:13px;margin-top:6px;">${item.product?.description ?? ''}</div>
+                <div
+                  style="
+                    margin-top:10px;
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:flex-end;
+                    font-size:13px;
+                    color:#0b1727;
+                  "
+                >
+                  <span style="font-weight:600;">${item.quantity} x ${this.formatCurrency(
+                    item.unitPrice,
+                  )}</span>
+                  <span style="font-weight:700;color:#0f172a;">${this.formatCurrency(
+                    item.quantity * item.unitPrice,
+                  )}</span>
+                </div>
               </div>
-              <div style="font-weight:600;color:#0b1727;">${this.formatCurrency(
-                item.quantity * item.unitPrice,
-              )}</div>
             </div>
           </td>
         </tr>
@@ -362,7 +376,7 @@ export class OrdersService {
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
             <div>
               <div style="font-size:12px;font-weight:600;letter-spacing:0.3px;color:#7c8895;">${order.orderNumber}</div>
-              <div style="font-size:24px;font-weight:700;color:#111827;margin-top:6px;text-transform:capitalize;">${order.status ?? 'pendiente'}</div>
+        <div style="font-size:24px;font-weight:700;color:#111827;margin-top:6px;text-transform:capitalize;">${order.status ?? 'pendiente'}</div>
               <div style="font-size:13px;color:#6b7280;margin-top:4px;">${createdAt}</div>
             </div>
             <div style="text-align:right;">
@@ -372,7 +386,17 @@ export class OrdersService {
           </div>
         </div>
 
-        <div style="padding:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;background:#fff;border-bottom:1px solid #e5e7eb;">
+        <div
+          style="
+            padding:24px;
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+            gap:18px;
+            row-gap:20px;
+            background:#fff;
+            border-bottom:1px solid #e5e7eb;
+          "
+        >
           ${shipping}
           ${billing}
         </div>
@@ -463,5 +487,11 @@ export class OrdersService {
   private formatCurrency(amount: number | null | undefined) {
     if (amount === null || amount === undefined) return 'Gs. 0';
     return `Gs. ${new Intl.NumberFormat('es-PY').format(amount)}`;
+  }
+
+  private formatDateToParaguay(value?: Date | string | null): string | undefined {
+    if (!value) return undefined;
+    const date = typeof value === 'string' ? new Date(value) : value;
+    return date.toLocaleString('es-PY', { timeZone: 'America/Asuncion' });
   }
 }
