@@ -334,34 +334,57 @@ export class OrdersService {
     const itemsRows = order.items
       ?.map(
         (item) => `
-        <tr>
-          <td style="padding:14px 0;">
-            <div style="display:flex;gap:16px;align-items:flex-start;">
-              ${this.renderProductImage(item.product?.images?.[0])}
-              <div style="flex:1;">
-                <div style="font-weight:600;color:#0b1727;font-size:15px;">${item.product?.title ?? 'Producto'}</div>
-                <div style="color:#4b5563;font-size:13px;margin-top:6px;">${item.product?.description ?? ''}</div>
-                <div
-                  style="
-                    margin-top:10px;
-                    display:flex;
-                    justify-content:space-between;
-                    align-items:flex-end;
-                    font-size:13px;
-                    color:#0b1727;
-                  "
-                >
-                  <span style="font-weight:600;">${item.quantity} x ${this.formatCurrency(
-                    item.unitPrice,
-                  )}</span>
-                  <span style="font-weight:700;color:#0f172a;">${this.formatCurrency(
-                    item.quantity * item.unitPrice,
-                  )}</span>
-                </div>
-              </div>
+        <div
+          style="
+            display:flex;
+            background:#fff;
+            border:1px solid #e5e7eb;
+            border-radius:12px;
+            overflow:hidden;
+            box-shadow:0 4px 8px rgba(15,23,42,0.08);
+          "
+        >
+          <a
+            href="#"
+            style="
+              width:160px;
+              flex-shrink:0;
+              display:block;
+              overflow:hidden;
+            "
+          >
+            <img
+              src="${(item.product?.images ?? [''])[0]}"
+              alt="${item.product?.title ?? 'Producto'}"
+              style="width:100%;height:160px;object-fit:cover;display:block;"
+            />
+          </a>
+          <div style="flex:1;padding:16px;display:flex;flex-direction:column;gap:8px;">
+            <div>
+              <p style="margin:0;font-weight:600;font-size:16px;color:#111827;">${item.product?.title ?? 'Producto'}</p>
+              <p style="margin:6px 0 0;font-size:13px;color:#4b5563;line-height:1.4;">
+                ${item.product?.description ?? ''}
+              </p>
             </div>
-          </td>
-        </tr>
+            <div
+              style="
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-end;
+                margin-top:auto;
+                font-size:13px;
+                color:#0b1727;
+              "
+            >
+              <span style="font-weight:600;">
+                ${item.quantity} x ${this.formatCurrency(item.unitPrice)}
+              </span>
+              <span style="font-weight:700;color:#0f172a;">
+                ${this.formatCurrency(item.quantity * item.unitPrice)}
+              </span>
+            </div>
+          </div>
+        </div>
       `,
       )
       .join('');
@@ -371,50 +394,51 @@ export class OrdersService {
 
     const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;background:#eef2f7;padding:24px;color:#0f172a;">
-      <div style="max-width:700px;margin:0 auto;background:#fff;border-radius:18px;box-shadow:0 20px 40px rgba(15,23,42,0.14);overflow:hidden;">
-        <div style="padding:28px 34px;border-bottom:1px solid #e5e7eb;background:#f7f9fc;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
-            <div>
-              <div style="font-size:12px;font-weight:600;letter-spacing:0.3px;color:#7c8895;">${order.orderNumber}</div>
-              <div style="font-size:24px;font-weight:700;color:#111827;margin-top:6px;text-transform:capitalize;">${order.status ?? 'pendiente'}</div>
-              <div style="font-size:13px;color:#6b7280;margin-top:4px;">${createdAt}</div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:14px;font-weight:600;color:#0ea5e9;">Total</div>
-              <div style="font-size:26px;font-weight:800;color:#0f172a;margin-top:4px;">${currency}</div>
+      <div style="max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+        <section style="background:#fff;border-radius:18px;box-shadow:0 20px 40px rgba(15,23,42,0.1);overflow:hidden;">
+          <div style="padding:28px 34px;background:#f7f9fc;border-bottom:1px solid #e5e7eb;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
+              <div>
+                <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.3px;color:#7c8895;">${order.orderNumber}</p>
+                <h1 style="margin:6px 0 0;font-size:28px;font-weight:700;color:#111827;text-transform:capitalize;">${order.status ?? 'pendiente'}</h1>
+                <p style="margin:4px 0 0;font-size:13px;color:#6b7280;">${createdAt}</p>
+              </div>
+              <div style="text-align:right;">
+                <p style="margin:0;font-size:14px;font-weight:600;color:#0ea5e9;">Total</p>
+                <p style="margin:4px 0 0;font-size:26px;font-weight:800;color:#0f172a;">${currency}</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div
-          style="
-            padding:28px 32px;
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-            gap:20px;
-            row-gap:24px;
-            background:#fff;
-          "
-        >
-          ${shipping}
-          ${billing}
-        </div>
-
-        <div style="padding:26px 30px 28px;background:#fff;">
-          <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">Productos</div>
-          <table style="width:100%;border-collapse:separate;border-spacing:0 12px;">
-            <tbody>
-              ${itemsRows}
-            </tbody>
-          </table>
-          <div style="margin-top:10px;text-align:right;font-size:16px;font-weight:700;color:#111827;">
-            <span style="opacity:0.7;">Total:</span>&nbsp;${currency}
+          <div
+            style="
+              padding:24px 32px;
+              display:grid;
+              grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+              gap:20px;
+              row-gap:24px;
+              border-bottom:1px solid #e5e7eb;
+              background:#fff;
+            "
+          >
+            ${shipping}
+            ${billing}
           </div>
-        </div>
 
-        <div style="padding:18px 24px;background:#0ea5e9;color:#fff;text-align:center;font-weight:600;font-size:16px;">
-          ¡Gracias por tu compra, ${user.fullName ?? user.email}!
-        </div>
+          <div style="padding:24px 28px;background:#fff;">
+            <h2 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827;">Productos</h2>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              ${itemsRows || `<p style="margin:0;font-size:14px;color:#6b7280;">No hay items en este pedido.</p>`}
+            </div>
+            <div style="margin-top:16px;text-align:right;font-size:16px;font-weight:700;color:#111827;">
+              <span style="opacity:0.7;">Total:</span>&nbsp;${currency}
+            </div>
+          </div>
+
+          <div style="padding:18px 24px;background:#0ea5e9;color:#fff;text-align:center;font-weight:600;font-size:16px;">
+            ¡Gracias por tu compra, ${user.fullName ?? user.email}!
+          </div>
+        </section>
       </div>
     </div>
     `;
