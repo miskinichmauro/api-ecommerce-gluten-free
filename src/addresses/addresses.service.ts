@@ -5,12 +5,15 @@ import { Repository } from 'typeorm';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { Address } from './entities/address.entity';
+import { Order } from 'src/orders/entities/order.entity';
 
 @Injectable()
 export class AddressesService {
   constructor(
     @InjectRepository(Address)
     private readonly addressRepository: Repository<Address>,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
   ) {}
 
   async findAll(user: User) {
@@ -47,6 +50,13 @@ export class AddressesService {
 
   async remove(user: User, id: string) {
     const address = await this.findOwned(user.id, id);
+    await this.orderRepository
+      .createQueryBuilder()
+      .update(Order)
+      .set({ shippingAddress: null })
+      .where('shippingAddressId = :id', { id })
+      .andWhere('userId = :userId', { userId: user.id })
+      .execute();
     await this.addressRepository.remove(address);
   }
 

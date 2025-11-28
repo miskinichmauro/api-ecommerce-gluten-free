@@ -4,9 +4,10 @@ import { AuthModule } from 'src/auth/auth.module';
 import { BillingController } from './billing.controller';
 import { BillingService } from './billing.service';
 import { BillingProfile } from './entities/billing-profile.entity';
+import { Order } from 'src/orders/entities/order.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BillingProfile]), AuthModule],
+  imports: [TypeOrmModule.forFeature([BillingProfile, Order]), AuthModule],
   controllers: [BillingController],
   providers: [BillingService],
   exports: [BillingService],

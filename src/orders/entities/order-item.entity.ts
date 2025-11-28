@@ -10,12 +10,15 @@ export class OrderItem {
   @ManyToOne(() => Order, (order) => order.items, { onDelete: 'CASCADE' })
   order: Order;
 
-  @ManyToOne(() => Product, { eager: true })
-  product: Product;
+  @ManyToOne(() => Product, { eager: true, nullable: true, onDelete: 'SET NULL' })
+  product: Product | null;
 
   @Column('int')
   quantity: number;
 
   @Column('float')
   unitPrice: number;
+
+  @Column({ type: 'jsonb', nullable: true })
+  productSnapshot?: Record<string, any> | null;
 }

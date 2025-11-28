@@ -29,11 +29,25 @@ export class Order {
   })
   items: OrderItem[];
 
-  @ManyToOne(() => Address, { eager: true, nullable: true })
+  @ManyToOne(() => Address, {
+    eager: true,
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   shippingAddress?: Address | null;
 
-  @ManyToOne(() => BillingProfile, { eager: true, nullable: true })
+  @ManyToOne(() => BillingProfile, {
+    eager: true,
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   billingProfile?: BillingProfile | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  shippingSnapshot?: Record<string, any> | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  billingSnapshot?: Record<string, any> | null;
 
   @Column({ type: 'varchar', default: 'pending' })
   status: string;

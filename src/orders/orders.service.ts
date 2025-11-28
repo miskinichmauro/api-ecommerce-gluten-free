@@ -66,6 +66,7 @@ export class OrdersService {
         product: item.product,
         quantity: item.quantity,
         unitPrice: item.product.price,
+        productSnapshot: this.buildProductSnapshot(item.product),
       }),
     );
 
@@ -75,12 +76,45 @@ export class OrdersService {
     );
 
     const orderNumber = await this.generateOrderNumber();
+    const shippingSnapshot = shippingAddress
+      ? {
+          id: shippingAddress.id,
+          label: shippingAddress.label,
+          fullName: shippingAddress.fullName,
+          phone: shippingAddress.phone,
+          street: shippingAddress.street,
+          apartment: shippingAddress.apartment,
+          city: shippingAddress.city,
+          state: shippingAddress.state,
+          country: shippingAddress.country,
+          postalCode: shippingAddress.postalCode,
+          notes: shippingAddress.notes,
+        }
+      : null;
+
+    const billingSnapshot = billingProfile
+      ? {
+        id: billingProfile.id,
+        legalName: billingProfile.legalName,
+        taxId: billingProfile.taxId,
+        email: billingProfile.email,
+        phone: billingProfile.phone,
+        addressLine1: billingProfile.addressLine1,
+        addressLine2: billingProfile.addressLine2,
+        city: billingProfile.city,
+        state: billingProfile.state,
+        country: billingProfile.country,
+        postalCode: billingProfile.postalCode,
+      }
+      : null;
 
     const order = this.orderRepository.create({
       user,
       items,
       shippingAddress,
       billingProfile,
+      shippingSnapshot,
+      billingSnapshot,
       orderNumber,
       total,
       status: 'pending',
@@ -143,18 +177,58 @@ export class OrdersService {
   }
 
   private mapOrderResponse(order: Order) {
-    const mapImages = (product: Product) =>
-      product.images?.map((img) => this.fileService.getPublicUrl('products', img.fileName)) ?? [];
+    const shippingAddress = order.shippingAddress ?? order.shippingSnapshot ?? null;
+    const billingProfile = order.billingProfile ?? order.billingSnapshot ?? null;
 
     return {
       ...order,
-      items: order.items?.map((item) => ({
-        ...item,
-        product: {
-          ...item.product,
-          images: mapImages(item.product),
-        },
-      })),
+      shippingAddress,
+      billingProfile,
+      items: order.items?.map((item) => {
+        const product = this.mapProductWithImages(item.product, item.productSnapshot);
+        return {
+          ...item,
+          product,
+        };
+      }),
+    };
+  }
+
+  private mapProductWithImages(product?: Product | null, snapshot?: Record<string, any> | null) {
+    if (product) {
+      const fileNames = product.images?.map((img) => img.fileName) ?? [];
+      return {
+        ...product,
+        images: this.mapImageNames(fileNames),
+      };
+    }
+
+    const snap = snapshot ?? {};
+    const fileNames: string[] = Array.isArray((snap as any).images) ? (snap as any).images : [];
+    return {
+      ...snap,
+      images: this.mapImageNames(fileNames),
+    };
+  }
+
+  private mapImageNames(fileNames: string[]) {
+    return fileNames.map((fileName) => this.fileService.getPublicUrl('products', fileName));
+  }
+
+  private buildProductSnapshot(product: Product) {
+    return {
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      description: product.description,
+      slug: product.slug,
+      stock: product.stock,
+      isFeatured: product.isFeatured,
+      images: product.images?.map((img) => img.fileName) ?? [],
+      category: product.category
+        ? { id: product.category.id, name: product.category.name, description: product.category.description }
+        : undefined,
+      tags: product.tags?.map((tag) => ({ id: tag.id, name: tag.name })) ?? [],
     };
   }
 }

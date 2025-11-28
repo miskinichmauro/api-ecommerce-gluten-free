@@ -5,12 +5,15 @@ import { Repository } from 'typeorm';
 import { CreateBillingProfileDto } from './dto/create-billing-profile.dto';
 import { UpdateBillingProfileDto } from './dto/update-billing-profile.dto';
 import { BillingProfile } from './entities/billing-profile.entity';
+import { Order } from 'src/orders/entities/order.entity';
 
 @Injectable()
 export class BillingService {
   constructor(
     @InjectRepository(BillingProfile)
     private readonly billingRepository: Repository<BillingProfile>,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
   ) {}
 
   async findAll(user: User) {
@@ -47,6 +50,13 @@ export class BillingService {
 
   async remove(user: User, id: string) {
     const profile = await this.findOwned(user.id, id);
+    await this.orderRepository
+      .createQueryBuilder()
+      .update(Order)
+      .set({ billingProfile: null })
+      .where('billingProfileId = :id', { id })
+      .andWhere('userId = :userId', { userId: user.id })
+      .execute();
     await this.billingRepository.remove(profile);
   }
 
