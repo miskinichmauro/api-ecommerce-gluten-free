@@ -330,115 +330,166 @@ export class OrdersService {
 
   private async sendOrderMail(user: User, order: MappedOrder) {
     const currency = this.formatCurrency(order.total);
-    const createdAt = this.formatDateToParaguay(order.createdAt) ?? '';
-    const itemsRows = order.items
-      ?.map(
-        (item) => `
-        <div
-          style="
-            display:flex;
-            background:#fff;
-            border:1px solid #e5e7eb;
-            border-radius:12px;
-            overflow:hidden;
-            box-shadow:0 4px 8px rgba(15,23,42,0.08);
-          "
-        >
-          <a
-            href="#"
-            style="
-              width:160px;
-              flex-shrink:0;
-              display:block;
-              overflow:hidden;
-            "
-          >
-            <img
-              src="${(item.product?.images ?? [''])[0]}"
-              alt="${item.product?.title ?? 'Producto'}"
-              style="width:100%;height:160px;object-fit:cover;display:block;"
-            />
-          </a>
-          <div style="flex:1;padding:16px;display:flex;flex-direction:column;gap:8px;">
-            <div>
-              <p style="margin:0;font-weight:600;font-size:16px;color:#111827;">${item.product?.title ?? 'Producto'}</p>
-              <p style="margin:6px 0 0;font-size:13px;color:#4b5563;line-height:1.4;">
-                ${item.product?.description ?? ''}
-              </p>
-            </div>
-            <div
-              style="
-                display:flex;
-                justify-content:space-between;
-                align-items:flex-end;
-                margin-top:auto;
-                font-size:13px;
-                color:#0b1727;
-              "
-            >
-              <span style="font-weight:600;">
-                ${item.quantity} x ${this.formatCurrency(item.unitPrice)}
-              </span>
-              <span style="font-weight:700;color:#0f172a;">
-                ${this.formatCurrency(item.quantity * item.unitPrice)}
-              </span>
-            </div>
-          </div>
-        </div>
-      `,
-      )
-      .join('');
+    const createdAt =
+      order.createdAtParaguay ?? this.formatDateToParaguay(order.createdAt) ?? '';
 
-    const shipping = this.renderAddressBlock('Dirección de envío', order.shippingAddress);
-    const billing = this.renderBillingBlock('Facturación', order.billingProfile);
+    const status =
+      (order.status ?? 'pending')
+        .toString()
+        .replace('_', ' ')
+        .toLowerCase() === 'pending'
+        ? 'Pendiente'
+        : (order.status ?? '').toString();
 
-    const html = `
-    <div style="font-family:Arial,Helvetica,sans-serif;background:#eef2f7;padding:24px;color:#0f172a;">
-      <div style="max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
-        <section style="background:#fff;border-radius:18px;box-shadow:0 20px 40px rgba(15,23,42,0.1);overflow:hidden;">
-          <div style="padding:28px 34px;background:#f7f9fc;border-bottom:1px solid #e5e7eb;">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
-              <div>
-                <p style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.3px;color:#7c8895;">${order.orderNumber}</p>
-                <h1 style="margin:6px 0 0;font-size:28px;font-weight:700;color:#111827;text-transform:capitalize;">${order.status ?? 'pendiente'}</h1>
-                <p style="margin:4px 0 0;font-size:13px;color:#6b7280;">${createdAt}</p>
-              </div>
-              <div style="text-align:right;">
-                <p style="margin:0;font-size:14px;font-weight:600;color:#0ea5e9;">Total</p>
-                <p style="margin:4px 0 0;font-size:26px;font-weight:800;color:#0f172a;">${currency}</p>
-              </div>
-            </div>
-          </div>
+    const itemsRows =
+      order.items
+        ?.map((item) => {
+          const img = (item.product?.images ?? [])[0] ?? '';
+          const title = item.product?.title ?? 'Producto';
+          const desc = item.product?.description ?? '';
+          const quantity = item.quantity ?? 1;
+          const unitPrice = this.formatCurrency(item.unitPrice);
+          const subtotal = this.formatCurrency((item.unitPrice ?? 0) * quantity);
 
+          return `
           <div
             style="
-              padding:24px 32px;
-              display:grid;
-              grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-              gap:20px;
-              row-gap:24px;
-              border-bottom:1px solid #e5e7eb;
-              background:#fff;
+              display:flex;
+              background:#ffffff;
+              border:1px solid #e5e7eb;
+              border-radius:12px;
+              overflow:hidden;
+              margin-bottom:12px;
             "
           >
-            ${shipping}
-            ${billing}
-          </div>
-
-          <div style="padding:24px 28px;background:#fff;">
-            <h2 style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827;">Productos</h2>
-            <div style="display:flex;flex-direction:column;gap:12px;">
-              ${itemsRows || `<p style="margin:0;font-size:14px;color:#6b7280;">No hay items en este pedido.</p>`}
+            <a
+              href="#"
+              style="
+                width:150px;
+                flex-shrink:0;
+                display:block;
+              "
+            >
+              <img
+                src="${img}"
+                alt="${title}"
+                style="width:100%;height:110px;object-fit:cover;display:block;"
+              />
+            </a>
+            <div style="flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;">
+              <div>
+                <a
+                  href="#"
+                  style="
+                    margin:0;
+                    font-weight:600;
+                    font-size:15px;
+                    color:#111827;
+                    text-decoration:none;
+                    display:block;
+                  "
+                >
+                  ${title}
+                </a>
+                <p style="margin:4px 0 0;font-size:13px;color:#6b7280;line-height:1.4;">
+                  ${desc}
+                </p>
+              </div>
+              <div
+                style="
+                  display:flex;
+                  justify-content:space-between;
+                  align-items:flex-end;
+                  margin-top:auto;
+                  font-size:13px;
+                  color:#4b5563;
+                "
+              >
+                <span>
+                  ${quantity} x ${unitPrice}
+                </span>
+                <span style="font-weight:700;color:#111827;">
+                  ${subtotal}
+                </span>
+              </div>
             </div>
-            <div style="margin-top:16px;text-align:right;font-size:16px;font-weight:700;color:#111827;">
-              <span style="opacity:0.7;">Total:</span>&nbsp;${currency}
-            </div>
           </div>
+        `;
+        })
+        .join('') ||
+      `<p style="margin:0;font-size:14px;color:#6b7280;">No hay items en este pedido.</p>`;
 
-          <div style="padding:18px 24px;background:#0ea5e9;color:#fff;text-align:center;font-weight:600;font-size:16px;">
-            ¡Gracias por tu compra, ${user.fullName ?? user.email}!
+    const shipping = this.renderAddressBlock(
+      'Dirección de envío',
+      order.shippingAddress,
+    );
+    const billing = this.renderBillingBlock(
+      'Facturación',
+      order.billingProfile,
+    );
+
+    const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;background:#f3f4f6;padding:24px;color:#0f172a;">
+      <div style="max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+
+        <!-- ENCABEZADO (igual al front en lógica) -->
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <div>
+            <p style="margin:0;font-size:13px;color:#6b7280;">
+              ${order.orderNumber ?? order.id}
+            </p>
+            <p style="margin:4px 0 0;font-size:24px;font-weight:700;color:#111827;">
+              ${status}
+            </p>
+            <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">
+              ${createdAt}
+            </p>
           </div>
-        </section>
+          <div style="text-align:right;">
+            <p style="margin:0;font-size:20px;font-weight:700;color:#0f172a;">
+              ${currency}
+            </p>
+          </div>
+        </div>
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+            gap:16px;
+          "
+        >
+          ${shipping}
+          ${billing}
+        </div>
+
+        <div style="padding:20px;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;">
+          <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827;">
+            Productos
+          </p>
+
+          ${itemsRows}
+
+          <div style="text-align:right;font-size:16px;font-weight:700;margin-top:12px;color:#111827;">
+            Total: ${currency}
+          </div>
+        </div>
+
+        <div
+          style="
+            margin-top:8px;
+            padding:14px 16px;
+            background:#0ea5e9;
+            color:#ffffff;
+            text-align:center;
+            border-radius:12px;
+            font-size:14px;
+            font-weight:600;
+          "
+        >
+          ¡Gracias por tu compra, ${user.fullName ?? user.email}!
+        </div>
+
       </div>
     </div>
     `;
@@ -450,12 +501,6 @@ export class OrdersService {
     });
   }
 
-  private renderProductImage(url?: string) {
-    if (!url) {
-      return `<div style="width:72px;height:72px;border-radius:8px;background:#f3f4f6;"></div>`;
-    }
-    return `<img src="${url}" alt="Producto" width="72" height="72" style="object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;">`;
-  }
 
   private renderAddressBlock(title: string, address?: Record<string, any> | null) {
     if (!address) {
