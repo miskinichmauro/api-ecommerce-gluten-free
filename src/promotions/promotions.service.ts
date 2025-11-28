@@ -26,7 +26,11 @@ export class PromotionsService {
   async findOne(id: string) {
     const promotion = await this.promotionRepository.findOneBy({ id });
     if (!promotion) {
-      throw new NotFoundException(`Promoción con id ${id} no encontrada`);
+      throw new NotFoundException({
+        message: `Promoción con id ${id} no encontrada`,
+        code: 'PROMOTION_NOT_FOUND',
+        expose: true,
+      });
     }
     return promotion;
   }

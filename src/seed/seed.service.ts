@@ -47,19 +47,27 @@ export class SeedService {
   async executeSeed(apiKey: string) {
     const apiKeyEnv = this.configService.get<string>('API_KEY');
     if (!apiKeyEnv) {
-      throw new UnauthorizedException(
-        'Falta una variable necesaria (API_KEY) para la ejecución del SEED',
-      );
+      throw new UnauthorizedException({
+        message: 'Falta una variable necesaria (API_KEY) para la ejecución del SEED',
+        code: 'SEED_API_KEY_MISSING',
+        expose: true,
+      });
     }
 
     if (!apiKey) {
-      throw new UnauthorizedException('Debe enviar una API Key en los headers');
+      throw new UnauthorizedException({
+        message: 'Debe enviar una API Key en los headers',
+        code: 'SEED_API_KEY_REQUIRED',
+        expose: true,
+      });
     }
 
     if (apiKey !== apiKeyEnv) {
-      throw new ForbiddenException(
-        'API Key inválida o sin permisos para ejecutar este endpoint',
-      );
+      throw new ForbiddenException({
+        message: 'API Key inválida o sin permisos para ejecutar este endpoint',
+        code: 'SEED_API_KEY_INVALID',
+        expose: true,
+      });
     }
 
     await this.deleteTables();
@@ -128,17 +136,21 @@ export class SeedService {
       initialProducts.map(({ categoryName, tagNames = [], ...product }) => {
         const categoryId = categoriesMap.get(categoryName);
         if (!categoryId) {
-          throw new NotFoundException(
-            `No se encontro la categoria '${categoryName}' para el producto '${product.title}'`,
-          );
+          throw new NotFoundException({
+            message: `No se encontró la categoría '${categoryName}' para el producto '${product.title}'`,
+            code: 'SEED_CATEGORY_NOT_FOUND',
+            expose: true,
+          });
         }
 
         const tagIds = tagNames.map((tagName) => {
           const tagId = tagsMap.get(tagName);
           if (!tagId) {
-            throw new NotFoundException(
-              `No se encontro el tag '${tagName}' para el producto '${product.title}'`,
-            );
+            throw new NotFoundException({
+              message: `No se encontró el tag '${tagName}' para el producto '${product.title}'`,
+              code: 'SEED_TAG_NOT_FOUND',
+              expose: true,
+            });
           }
           return tagId;
         });
@@ -173,9 +185,11 @@ export class SeedService {
         const ingredientIds = ingredientNames.map((ingredientName) => {
           const ingredientId = ingredientsMap.get(ingredientName);
           if (!ingredientId) {
-            throw new NotFoundException(
-              `No se encontro el ingrediente '${ingredientName}' para la receta '${recipe.title}'`,
-            );
+            throw new NotFoundException({
+              message: `No se encontró el ingrediente '${ingredientName}' para la receta '${recipe.title}'`,
+              code: 'SEED_INGREDIENT_NOT_FOUND',
+              expose: true,
+            });
           }
           return ingredientId;
         });

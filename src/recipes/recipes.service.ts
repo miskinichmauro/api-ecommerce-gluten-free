@@ -57,7 +57,12 @@ export class RecipesService {
       where: { id },
       relations: ['recipeIngredients', 'recipeIngredients.ingredient'],
     });
-    if (!recipe) throw new NotFoundException(`Receta con id ${id} no encontrada`);
+    if (!recipe)
+      throw new NotFoundException({
+        message: `Receta con id ${id} no encontrada`,
+        code: 'RECIPE_NOT_FOUND',
+        expose: true,
+      });
     return recipe;
   }
 
@@ -184,7 +189,11 @@ export class RecipesService {
     });
 
     if (found.length !== uniqueIds.length) {
-      throw new BadRequestException('Uno o mas ingredientes no existen');
+      throw new BadRequestException({
+        message: 'Uno o más ingredientes no existen',
+        code: 'RECIPE_INGREDIENT_NOT_FOUND',
+        expose: true,
+      });
     }
 
     return found;

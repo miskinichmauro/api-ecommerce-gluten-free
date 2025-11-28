@@ -66,7 +66,11 @@ export class BillingService {
     });
 
     if (!profile) {
-      throw new NotFoundException('Dato de facturacion no encontrado');
+      throw new NotFoundException({
+        message: 'Dato de facturación no encontrado',
+        code: 'BILLING_NOT_FOUND',
+        expose: true,
+      });
     }
 
     return profile;

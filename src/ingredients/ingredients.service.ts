@@ -57,7 +57,11 @@ export class IngredientsService {
   async findOne(id: string) {
     const ingredient = await this.ingredientRepository.findOneBy({ id });
     if (!ingredient) {
-      throw new NotFoundException(`Ingrediente con id ${id} no encontrado`);
+      throw new NotFoundException({
+        message: `Ingrediente con id ${id} no encontrado`,
+        code: 'INGREDIENT_NOT_FOUND',
+        expose: true,
+      });
     }
     return ingredient;
   }
@@ -69,7 +73,11 @@ export class IngredientsService {
     });
 
     if (!ingredient) {
-      throw new NotFoundException(`Ingrediente con id ${id} no encontrado`);
+      throw new NotFoundException({
+        message: `Ingrediente con id ${id} no encontrado`,
+        code: 'INGREDIENT_NOT_FOUND',
+        expose: true,
+      });
     }
 
     try {
@@ -93,11 +101,19 @@ export class IngredientsService {
     if (typeof error === 'object' && error !== null && 'code' in error) {
       const err = error as { code?: string; detail?: string };
       if (err.code === '23505') {
-        throw new BadRequestException(err.detail);
+        throw new BadRequestException({
+          message: err.detail ?? 'El ingrediente ya existe',
+          code: 'INGREDIENT_CONFLICT',
+          expose: true,
+        });
       }
     }
 
     this.logger.error(error);
-    throw new InternalServerErrorException('Error inesperado en IngredientsService');
+    throw new InternalServerErrorException({
+      message: 'Error inesperado en IngredientsService',
+      code: 'INGREDIENT_UNEXPECTED_ERROR',
+      expose: false,
+    });
   }
 }

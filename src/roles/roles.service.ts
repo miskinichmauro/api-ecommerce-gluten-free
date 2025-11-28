@@ -24,7 +24,12 @@ export class RolesService {
 
   async findOne(id: string) {
     const role = await this.roleRepository.findOneBy({ id });
-    if (!role) throw new NotFoundException(`Rol con id ${id} no encontrado`);
+    if (!role)
+      throw new NotFoundException({
+        message: `Rol con id ${id} no encontrado`,
+        code: 'ROLE_NOT_FOUND',
+        expose: true,
+      });
     return role;
   }
 
@@ -40,7 +45,12 @@ export class RolesService {
   }
   
   handleDBException(error: any) {
-    if (error.code === '23505') throw new BadRequestException(error.detail);
+    if (error.code === '23505')
+      throw new BadRequestException({
+        message: error.detail ?? 'El rol ya existe',
+        code: 'ROLE_CONFLICT',
+        expose: true,
+      });
   }
 
   async removeAll() {

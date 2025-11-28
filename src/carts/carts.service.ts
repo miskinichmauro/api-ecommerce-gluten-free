@@ -46,7 +46,12 @@ export class CartsService {
     const { productId, quantity } = createCartItemDto;
     const product = await this.productRepository.findOne({ where: { id: productId } });
 
-    if (!product) throw new NotFoundException('Producto no encontrado');
+    if (!product)
+      throw new NotFoundException({
+        message: 'Producto no encontrado',
+        code: 'CART_PRODUCT_NOT_FOUND',
+        expose: true,
+      });
 
     const cart = await this.getUserCart(user);
 
@@ -66,7 +71,12 @@ export class CartsService {
   async updateItem(user: User, itemId: string, updateCartItemDto: UpdateCartItemDto) {
     const cart = await this.getUserCart(user);
     const item = cart.items.find((i) => i.id === itemId);
-    if (!item) throw new NotFoundException('Item no encontrado en el carrito');
+    if (!item)
+      throw new NotFoundException({
+        message: 'Item no encontrado en el carrito',
+        code: 'CART_ITEM_NOT_FOUND',
+        expose: true,
+      });
 
     Object.assign(item, updateCartItemDto);
     await this.cartRepository.save(cart);
@@ -76,7 +86,12 @@ export class CartsService {
   async removeItem(user: User, itemId: string) {
     const cart = await this.getUserCart(user);
     const itemIndex = cart.items.findIndex((i) => i.id === itemId);
-    if (itemIndex === -1) throw new NotFoundException('Item no encontrado');
+    if (itemIndex === -1)
+      throw new NotFoundException({
+        message: 'Item no encontrado',
+        code: 'CART_ITEM_NOT_FOUND',
+        expose: true,
+      });
 
     cart.items.splice(itemIndex, 1);
     await this.cartRepository.save(cart);

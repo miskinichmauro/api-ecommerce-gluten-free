@@ -9,19 +9,37 @@ export const fileFilter = (
   callback: Function,
 ) => {
   if (!file) {
-    return callback(new BadRequestException('Archivo vacío'), false);
+    return callback(
+      new BadRequestException({
+        message: 'Archivo vacío',
+        code: 'FILE_EMPTY',
+        expose: true,
+      }),
+      false,
+    );
   }
 
   const fileExtension = file.mimetype.split('/')[1]?.toLowerCase();
   const lastDotIndex = file.originalname.lastIndexOf('.');
 
   if (!fileExtension || lastDotIndex <= 0) {
-    return callback(new BadRequestException('Archivo vacío'), false);
+    return callback(
+      new BadRequestException({
+        message: 'Archivo vacío',
+        code: 'FILE_EMPTY',
+        expose: true,
+      }),
+      false,
+    );
   }
 
   if (!validExtensions.includes(fileExtension)) {
     return callback(
-      new BadRequestException('Extensión de archivo no válida'),
+      new BadRequestException({
+        message: 'Extensión de archivo no válida',
+        code: 'FILE_EXTENSION_INVALID',
+        expose: true,
+      }),
       false,
     );
   }

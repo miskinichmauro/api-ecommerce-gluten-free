@@ -11,7 +11,11 @@ export const GetUser = createParamDecorator(
     const user = request.user;
 
     if (!user) {
-      throw new UnauthorizedException('Usuario no encontrado');
+      throw new UnauthorizedException({
+        message: 'Usuario no encontrado',
+        code: 'AUTH_USER_NOT_FOUND',
+        expose: true,
+      });
     }
 
     return user;

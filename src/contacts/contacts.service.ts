@@ -23,7 +23,12 @@ export class ContactsService {
 
   async findOne(id: string) {
     const contact = await this.contactRepository.findOneBy({ id });
-    if (!contact) throw new NotFoundException(`Contacto con id ${id} no encontrado`);
+    if (!contact)
+      throw new NotFoundException({
+        message: `Contacto con id ${id} no encontrado`,
+        code: 'CONTACT_NOT_FOUND',
+        expose: true,
+      });
     return contact;
   }
 

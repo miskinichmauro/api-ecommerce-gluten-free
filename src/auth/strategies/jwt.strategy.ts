@@ -14,9 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
-      throw new Error(
-        'JWT_SECRET no está definido en las variables de entorno',
-      );
+      throw new Error('JWT_SECRET no está definido en las variables de entorno');
     }
 
     super({
@@ -30,11 +28,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.userRepository.findOneBy({ id: payload.id });
 
     if (!user) {
-      throw new UnauthorizedException('Token no válido');
+      throw new UnauthorizedException({
+        message: 'Token no válido',
+        code: 'AUTH_INVALID_TOKEN',
+        expose: true,
+      });
     }
 
     if (user.deletedAt) {
-      throw new UnauthorizedException('Usuario inactivo');
+      throw new UnauthorizedException({
+        message: 'Usuario inactivo',
+        code: 'AUTH_INACTIVE_USER',
+        expose: true,
+      });
     }
 
     return user;

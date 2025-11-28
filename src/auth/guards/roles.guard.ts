@@ -28,15 +28,21 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest<{ user: User }>();
 
     if (!user) {
-      throw new UnauthorizedException('Usuario no encontrado');
+      throw new UnauthorizedException({
+        message: 'Usuario no encontrado',
+        code: 'AUTH_USER_NOT_FOUND',
+        expose: true,
+      });
     }
 
     const hasRole = requiredRoles.some((role) => user.roles?.includes(role));
 
     if (!hasRole) {
-      throw new UnauthorizedException(
-        'No tiene permisos para ejecutar este endpoint',
-      );
+      throw new UnauthorizedException({
+        message: 'No tiene permisos para ejecutar este endpoint',
+        code: 'AUTH_FORBIDDEN_ROLE',
+        expose: true,
+      });
     }
 
     return true;

@@ -1,5 +1,10 @@
 import { Repository } from 'typeorm';
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -25,7 +30,7 @@ export class AuthService {
     });
     await this.userRepository.save(user);
 
-    const { password: _ , ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user;
     return {
       user: userWithoutPassword,
       access_token: this.getJwtToken({ id: user.id }),
@@ -48,7 +53,12 @@ export class AuthService {
     });
 
     if (!user || !bcrypt.compareSync(loginUserDto.password, user.password))
-      throw new UnauthorizedException('Las credenciales no son validas');
+      throw new UnauthorizedException({
+        message:
+          'Usuario y/o contrasena incorrectos. Si aun no tienes una cuenta, puedes registrarte',
+        code: 'AUTH_INVALID_CREDENTIALS',
+        expose: true,
+      });
 
     const { password, ...userWithoutPassword } = user;
     return {
@@ -70,11 +80,18 @@ export class AuthService {
   }
 
   handleDbErrorExceptions(error: any) {
-    if (error.code === '23505') throw new BadRequestException(error.detail);
+    if (error.code === '23505')
+      throw new BadRequestException({
+        message: error.detail ?? 'El dato ya existe',
+        code: 'AUTH_CONFLICT',
+        expose: true,
+      });
 
     console.log(error);
-    throw new InternalServerErrorException(
-      'Ocurrió un error inesperado. Por favor, verifica los logs.',
-    );
+    throw new InternalServerErrorException({
+      message: 'Ocurrio un error inesperado. Por favor, verifica los logs.',
+      code: 'AUTH_UNEXPECTED_ERROR',
+      expose: false,
+    });
   }
 }

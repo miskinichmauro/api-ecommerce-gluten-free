@@ -24,11 +24,19 @@ export class MailService {
   async send(sendMailDto: SendMailDto) {
     const apiKey = this.configService.get<string>('SENDGRID_API_KEY');
     if (!apiKey) {
-      throw new InternalServerErrorException('SENDGRID_API_KEY no esta configurada');
+      throw new InternalServerErrorException({
+        message: 'SENDGRID_API_KEY no está configurada',
+        code: 'MAIL_API_KEY_MISSING',
+        expose: false,
+      });
     }
 
     if (!this.fromEmail) {
-      throw new InternalServerErrorException('MAIL_FROM_EMAIL no esta configurado');
+      throw new InternalServerErrorException({
+        message: 'MAIL_FROM_EMAIL no está configurado',
+        code: 'MAIL_FROM_EMAIL_MISSING',
+        expose: false,
+      });
     }
 
     const msg: MailDataRequired = {
@@ -47,7 +55,11 @@ export class MailService {
       return { status: response.statusCode };
     } catch (error) {
       this.logger.error('Error enviando correo', error as Error);
-      throw new InternalServerErrorException('No se pudo enviar el correo');
+      throw new InternalServerErrorException({
+        message: 'No se pudo enviar el correo',
+        code: 'MAIL_SEND_FAILED',
+        expose: false,
+      });
     }
   }
 }

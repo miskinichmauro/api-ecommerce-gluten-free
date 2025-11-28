@@ -47,19 +47,31 @@ export class ProductsService {
       ...productDetails
     } = createProductDto;
     if (!categoryId) {
-      throw new BadRequestException('Debe proporcionar una categoria para el producto.');
+      throw new BadRequestException({
+        message: 'Debe proporcionar una categoría para el producto.',
+        code: 'PRODUCT_CATEGORY_REQUIRED',
+        expose: true,
+      });
     }
 
     const category = await this.dataSource.getRepository(Category).findOneBy({ id: categoryId });
     if (!category) {
-      throw new NotFoundException(`No se encontro la categoria con id: ${categoryId}`);
+      throw new NotFoundException({
+        message: `No se encontró la categoría con id: ${categoryId}`,
+        code: 'PRODUCT_CATEGORY_NOT_FOUND',
+        expose: true,
+      });
     }
 
     let tags: Tag[] | null = null;
     if (tagIds.length > 0) {
       tags = await this.dataSource.getRepository(Tag).findBy({ id: In(tagIds) });
       if (tags?.length !== tagIds.length) {
-        throw new NotFoundException(`Algunos tags no existen en la base de datos.`);
+        throw new NotFoundException({
+          message: 'Algunos tags no existen en la base de datos.',
+          code: 'PRODUCT_TAGS_NOT_FOUND',
+          expose: true,
+        });
       }
     }
 
@@ -145,7 +157,11 @@ export class ProductsService {
     const product = await queryBuilder.getOne();
 
     if (!product) {
-      throw new NotFoundException(`No se encontro el producto: '${param}'`);
+      throw new NotFoundException({
+        message: `No se encontró el producto: '${param}'`,
+        code: 'PRODUCT_NOT_FOUND',
+        expose: true,
+      });
     }
     return product;
   }
@@ -161,7 +177,11 @@ export class ProductsService {
 
     const product = await this.productRepository.preload({ id, ...toUpdate });
     if (!product) {
-      throw new NotFoundException(`No se encontro el producto con id: '${id}'`);
+      throw new NotFoundException({
+        message: `No se encontró el producto con id: '${id}'`,
+        code: 'PRODUCT_NOT_FOUND',
+        expose: true,
+      });
     }
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -175,7 +195,11 @@ export class ProductsService {
           .findOneBy({ id: categoryId });
 
         if (!category) {
-          throw new NotFoundException(`No se encontro la categoria con id: '${categoryId}'`);
+          throw new NotFoundException({
+            message: `No se encontró la categoría con id: '${categoryId}'`,
+            code: 'PRODUCT_CATEGORY_NOT_FOUND',
+            expose: true,
+          });
         }
 
         product.category = category;
@@ -185,7 +209,11 @@ export class ProductsService {
         const tags = await queryRunner.manager.getRepository(Tag).findBy({ id: In(tagIds) });
 
         if (tags.length !== tagIds.length) {
-          throw new NotFoundException(`Algunos tags no existen en la base de datos.`);
+          throw new NotFoundException({
+            message: 'Algunos tags no existen en la base de datos.',
+            code: 'PRODUCT_TAGS_NOT_FOUND',
+            expose: true,
+          });
         }
 
         product.tags = tags;
@@ -263,14 +291,20 @@ export class ProductsService {
     }
 
     this.handleDBException(error);
-    throw new InternalServerErrorException(
-      'Ocurrio un error inesperado. Por favor, verifique los logs',
-    );
+    throw new InternalServerErrorException({
+      message: 'Ocurrió un error inesperado. Por favor, verifique los logs',
+      code: 'PRODUCT_UNEXPECTED_ERROR',
+      expose: false,
+    });
   }
 
   handleDBException(error: unknown) {
     if (this.isPostgresError(error) && error.code === '23505') {
-      throw new BadRequestException(error.detail ?? 'Violacion de restriccion unica');
+      throw new BadRequestException({
+        message: error.detail ?? 'Violación de restricción única',
+        code: 'PRODUCT_CONFLICT',
+        expose: true,
+      });
     }
   }
 

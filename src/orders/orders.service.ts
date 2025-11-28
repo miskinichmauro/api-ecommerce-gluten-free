@@ -34,7 +34,11 @@ export class OrdersService {
     });
 
     if (!cart || !cart.items || cart.items.length === 0) {
-      throw new BadRequestException('No hay productos en el carrito');
+      throw new BadRequestException({
+        message: 'No hay productos en el carrito',
+        code: 'ORDER_EMPTY_CART',
+        expose: true,
+      });
     }
 
     const shippingAddress = await this.addressRepository.findOne({
@@ -42,7 +46,11 @@ export class OrdersService {
     });
 
     if (!shippingAddress) {
-      throw new NotFoundException('Direccion de envio no encontrada');
+      throw new NotFoundException({
+        message: 'Dirección de envío no encontrada',
+        code: 'ORDER_SHIPPING_NOT_FOUND',
+        expose: true,
+      });
     }
 
     let billingProfile: BillingProfile | null = null;
@@ -52,7 +60,11 @@ export class OrdersService {
       });
 
       if (!billingProfile) {
-        throw new NotFoundException('Dato de facturacion no encontrado');
+        throw new NotFoundException({
+          message: 'Dato de facturación no encontrado',
+          code: 'ORDER_BILLING_NOT_FOUND',
+          expose: true,
+        });
       }
     } else {
       billingProfile =
@@ -148,7 +160,11 @@ export class OrdersService {
     });
 
     if (!order) {
-      throw new NotFoundException('Pedido no encontrado');
+      throw new NotFoundException({
+        message: 'Pedido no encontrado',
+        code: 'ORDER_NOT_FOUND',
+        expose: true,
+      });
     }
 
     return this.mapOrderResponse(order);
@@ -173,7 +189,11 @@ export class OrdersService {
       if (!exists) return candidate;
     }
 
-    throw new BadRequestException('No se pudo generar el numero de pedido');
+    throw new BadRequestException({
+      message: 'No se pudo generar el número de pedido',
+      code: 'ORDER_NUMBER_GENERATION_FAILED',
+      expose: true,
+    });
   }
 
   private mapOrderResponse(order: Order) {

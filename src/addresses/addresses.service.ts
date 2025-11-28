@@ -66,7 +66,11 @@ export class AddressesService {
     });
 
     if (!address) {
-      throw new NotFoundException('Direccion no encontrada');
+      throw new NotFoundException({
+        message: 'Dirección no encontrada',
+        code: 'ADDRESS_NOT_FOUND',
+        expose: true,
+      });
     }
 
     return address;

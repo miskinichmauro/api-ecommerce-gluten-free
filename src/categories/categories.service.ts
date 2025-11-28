@@ -47,7 +47,11 @@ export class CategoriesService {
     });
 
     if (!category) {
-      throw new NotFoundException(`No se encontró la categoría con id: '${id}'`);
+      throw new NotFoundException({
+        message: `No se encontró la categoría con id: '${id}'`,
+        code: 'CATEGORY_NOT_FOUND',
+        expose: true,
+      });
     }
 
     return category;
@@ -60,7 +64,11 @@ export class CategoriesService {
     });
 
     if (!category) {
-      throw new NotFoundException(`No se encontró la categoría con id: '${id}'`);
+      throw new NotFoundException({
+        message: `No se encontró la categoría con id: '${id}'`,
+        code: 'CATEGORY_NOT_FOUND',
+        expose: true,
+      });
     }
 
     try {
@@ -86,12 +94,20 @@ export class CategoriesService {
     if (typeof error === 'object' && error !== null && 'code' in error) {
       const err = error as { code?: string; detail?: string };
       if (err.code === '23505') {
-        throw new BadRequestException(err.detail);
+        throw new BadRequestException({
+          message: err.detail ?? 'La categoría ya existe',
+          code: 'CATEGORY_CONFLICT',
+          expose: true,
+        });
       }
     }
 
     this.logger.error(error);
-    throw new InternalServerErrorException('Error inesperado en CategoriesService');
+    throw new InternalServerErrorException({
+      message: 'Error inesperado en CategoriesService',
+      code: 'CATEGORY_UNEXPECTED_ERROR',
+      expose: false,
+    });
   }
 
   private async ensureFeaturedLimit(isFeatured: boolean, currentId?: string) {
@@ -107,9 +123,11 @@ export class CategoriesService {
     });
 
     if (featuredCount >= this.MAX_FEATURED) {
-      throw new BadRequestException(
-        `Solo se permiten ${this.MAX_FEATURED} categorías destacadas. Desmarca otra antes de crear o actualizar una nueva.`,
-      );
+      throw new BadRequestException({
+        message: `Solo se permiten ${this.MAX_FEATURED} categorías destacadas. Desmarca otra antes de crear o actualizar una nueva.`,
+        code: 'CATEGORY_FEATURED_LIMIT',
+        expose: true,
+      });
     }
   }
 }

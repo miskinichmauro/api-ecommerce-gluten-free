@@ -18,7 +18,11 @@ export class UsersService {
     const user = await this.userRepository.findOneBy({ id: userId });
 
     if (!user) {
-      throw new NotFoundException('No existe el usuario solicitado');
+      throw new NotFoundException({
+        message: 'No existe el usuario solicitado',
+        code: 'USER_NOT_FOUND',
+        expose: true,
+      });
     }
 
     return this.stripPassword(user);
@@ -41,7 +45,11 @@ export class UsersService {
     }
 
     if (!user) {
-      throw new NotFoundException('No existe el usuario solicitado');
+      throw new NotFoundException({
+        message: 'No existe el usuario solicitado',
+        code: 'USER_NOT_FOUND',
+        expose: true,
+      });
     }
 
     return user;
@@ -57,7 +65,11 @@ export class UsersService {
     const user = await this.userRepository.findOneBy({ id: userId });
 
     if (!user) {
-      throw new NotFoundException('No existe el usuario solicitado');
+      throw new NotFoundException({
+        message: 'No existe el usuario solicitado',
+        code: 'USER_NOT_FOUND',
+        expose: true,
+      });
     }
 
     if (
@@ -69,7 +81,11 @@ export class UsersService {
       });
 
       if (existingEmail && existingEmail.id !== userId) {
-        throw new BadRequestException('El email ya esta siendo utilizado');
+        throw new BadRequestException({
+          message: 'El email ya está siendo utilizado',
+          code: 'USER_EMAIL_IN_USE',
+          expose: true,
+        });
       }
     }
 
@@ -98,12 +114,19 @@ export class UsersService {
   }
 
   handleDbErrorExceptions(error: any) {
-    if (error.code === '23505') throw new BadRequestException(error.detail);
+    if (error.code === '23505')
+      throw new BadRequestException({
+        message: error.detail ?? 'El dato ya existe',
+        code: 'USER_CONFLICT',
+        expose: true,
+      });
 
     console.log(error);
-    throw new InternalServerErrorException(
-      'Ocurrió un error inesperado. Por favor, verifica los logs.',
-    );
+    throw new InternalServerErrorException({
+      message: 'Ocurrió un error inesperado. Por favor, verifica los logs.',
+      code: 'USER_UNEXPECTED_ERROR',
+      expose: false,
+    });
   }
 }
 

@@ -26,9 +26,11 @@ export class FilesService {
 
   uploadFile(type: string, file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestException(
-        'Asegúrate de que el archivo sea una imagen válida',
-      );
+      throw new BadRequestException({
+        message: 'Asegúrate de que el archivo sea una imagen válida',
+        code: 'FILE_EMPTY',
+        expose: true,
+      });
     }
 
     const normalizedType = this.normalizeType(type);
@@ -59,7 +61,11 @@ export class FilesService {
 
     if (!existsSync(uploadPath)) {
       this.removeMetadata(normalizedType, metadata.fileName);
-      throw new NotFoundException('No se encontró la imagen especificada');
+      throw new NotFoundException({
+        message: 'No se encontró la imagen especificada',
+        code: 'FILE_IMAGE_NOT_FOUND',
+        expose: true,
+      });
     }
 
     return uploadPath;
@@ -99,7 +105,11 @@ export class FilesService {
     }
 
     if (!metadata) {
-      throw new NotFoundException(`No se encontró el archivo con id: ${id}`);
+      throw new NotFoundException({
+        message: `No se encontró el archivo con id: ${id}`,
+        code: 'FILE_NOT_FOUND',
+        expose: true,
+      });
     }
 
     return metadata;

@@ -57,7 +57,11 @@ export class TagsService {
     });
 
     if (!tag) {
-      throw new NotFoundException(`No se encontró el tag con id: '${id}'`);
+      throw new NotFoundException({
+        message: `No se encontró el tag con id: '${id}'`,
+        code: 'TAG_NOT_FOUND',
+        expose: true,
+      });
     }
 
     return tag;
@@ -70,7 +74,11 @@ export class TagsService {
     });
 
     if (!tag) {
-      throw new NotFoundException(`No se encontró el tag con id: '${id}'`);
+      throw new NotFoundException({
+        message: `No se encontró el tag con id: '${id}'`,
+        code: 'TAG_NOT_FOUND',
+        expose: true,
+      });
     }
 
     try {
@@ -95,11 +103,19 @@ export class TagsService {
     if (typeof error === 'object' && error !== null && 'code' in error) {
       const err = error as { code?: string; detail?: string };
       if (err.code === '23505') {
-        throw new BadRequestException(err.detail);
+        throw new BadRequestException({
+          message: err.detail ?? 'El tag ya existe',
+          code: 'TAG_CONFLICT',
+          expose: true,
+        });
       }
     }
 
     this.logger.error(error);
-    throw new InternalServerErrorException('Error inesperado en TagsService');
+    throw new InternalServerErrorException({
+      message: 'Error inesperado en TagsService',
+      code: 'TAG_UNEXPECTED_ERROR',
+      expose: false,
+    });
   }
 }
