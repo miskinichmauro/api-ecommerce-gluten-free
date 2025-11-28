@@ -30,9 +30,8 @@ export class AuthService {
     });
     await this.userRepository.save(user);
 
-    const { password: _, ...userWithoutPassword } = user;
     return {
-      user: userWithoutPassword,
+      user: this.stripPassword(user),
       access_token: this.getJwtToken({ id: user.id }),
     };
   }
@@ -55,22 +54,20 @@ export class AuthService {
     if (!user || !bcrypt.compareSync(loginUserDto.password, user.password))
       throw new UnauthorizedException({
         message:
-          'Usuario y/o contrasena incorrectos. Si aun no tienes una cuenta, puedes registrarte',
+          'Usuario y/o contraseña incorrectos. Si aún no tienes una cuenta, puedes registrarte',
         code: 'AUTH_INVALID_CREDENTIALS',
         expose: true,
       });
 
-    const { password, ...userWithoutPassword } = user;
     return {
-      user: userWithoutPassword,
+      user: this.stripPassword(user),
       access_token: this.getJwtToken({ id: user.id }),
     };
   }
 
   checkStatus(user: User) {
-    const { password, ...userWithoutPassword } = user;
     return {
-      user: userWithoutPassword,
+      user: this.stripPassword(user),
       access_token: this.getJwtToken({ id: user.id }),
     };
   }
@@ -79,8 +76,8 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
-  handleDbErrorExceptions(error: any) {
-    if (error.code === '23505')
+  handleDbErrorExceptions(error: unknown) {
+    if (this.isPostgresError(error) && error.code === '23505')
       throw new BadRequestException({
         message: error.detail ?? 'El dato ya existe',
         code: 'AUTH_CONFLICT',
@@ -89,9 +86,19 @@ export class AuthService {
 
     console.log(error);
     throw new InternalServerErrorException({
-      message: 'Ocurrio un error inesperado. Por favor, verifica los logs.',
+      message: 'Ocurrió un error inesperado. Por favor, verifica los logs.',
       code: 'AUTH_UNEXPECTED_ERROR',
       expose: false,
     });
   }
+
+  private stripPassword(user: User) {
+    const { password: _password, ...rest } = user;
+    void _password;
+    return rest;
+  }
+
+  private isPostgresError(error: unknown): error is { code?: string; detail?: string } {
+    return typeof error === 'object' && error !== null && 'code' in error;
+   }
 }

@@ -11,6 +11,39 @@ import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { FilesService } from 'src/files/files.service';
 import { Product } from 'src/products/entities/product.entity';
+import { Category } from 'src/categories/entities/category.entity';
+import { Tag } from 'src/tags/entities/tag.entity';
+import { MailService } from 'src/mail/mail.service';
+
+type SnapshotCategory = { id: string; name: string; description?: string };
+type SnapshotTag = { id: string; name: string };
+
+type ProductSnapshot = {
+  id: string;
+  title: string;
+  price: number;
+  description?: string;
+  slug: string;
+  stock: number;
+  isFeatured: boolean;
+  images: string[];
+  category?: SnapshotCategory | undefined;
+  tags?: SnapshotTag[];
+};
+
+type MappedProduct =
+  | (Omit<Product, 'images' | 'category' | 'tags'> & {
+      images: string[];
+      category?: Category | SnapshotCategory;
+      tags?: (Tag | SnapshotTag)[];
+    })
+  | (Partial<Omit<Product, 'images' | 'category' | 'tags'>> & ProductSnapshot);
+type MappedOrderItem = Omit<OrderItem, 'product'> & { product: MappedProduct | null };
+type MappedOrder = Omit<Order, 'items' | 'shippingAddress' | 'billingProfile'> & {
+  items?: MappedOrderItem[];
+  shippingAddress: Address | Record<string, any> | null;
+  billingProfile: BillingProfile | Record<string, any> | null;
+};
 
 @Injectable()
 export class OrdersService {
@@ -26,6 +59,7 @@ export class OrdersService {
     @InjectRepository(Cart)
     private readonly cartRepository: Repository<Cart>,
     private readonly fileService: FilesService,
+    private readonly mailService: MailService,
   ) {}
 
   async checkout(user: User, checkoutDto: CheckoutDto) {
@@ -139,7 +173,13 @@ export class OrdersService {
     cart.updatedAt = new Date();
     await this.cartRepository.save(cart);
 
-    return this.mapOrderResponse(order);
+    const orderResponse = this.mapOrderResponse(order);
+
+    void this.sendOrderMail(user, orderResponse).catch((error) =>
+      console.error('No se pudo enviar el correo de confirmación', error),
+    );
+
+    return orderResponse;
   }
 
   async findAll(user: User, paginationDto: PaginationDto) {
@@ -196,37 +236,70 @@ export class OrdersService {
     });
   }
 
-  private mapOrderResponse(order: Order) {
+  private mapOrderResponse(order: Order): MappedOrder {
     const shippingAddress = order.shippingAddress ?? order.shippingSnapshot ?? null;
     const billingProfile = order.billingProfile ?? order.billingSnapshot ?? null;
 
+    const items: MappedOrderItem[] | undefined = order.items?.map((item) => {
+      const product = this.mapProductWithImages(
+        item.product,
+        item.productSnapshot as ProductSnapshot | null | undefined,
+      );
+      return {
+        ...item,
+        product,
+      };
+    });
+
+    const base: Omit<Order, 'items' | 'shippingAddress' | 'billingProfile'> = {
+      ...(order as Omit<Order, 'items' | 'shippingAddress' | 'billingProfile'>),
+    };
+
     return {
-      ...order,
+      ...base,
       shippingAddress,
       billingProfile,
-      items: order.items?.map((item) => {
-        const product = this.mapProductWithImages(item.product, item.productSnapshot);
-        return {
-          ...item,
-          product,
-        };
-      }),
+      items,
     };
   }
 
-  private mapProductWithImages(product?: Product | null, snapshot?: Record<string, any> | null) {
+  private mapProductWithImages(
+    product?: Product | null,
+    snapshot?: ProductSnapshot | null,
+  ): MappedProduct {
     if (product) {
       const fileNames = product.images?.map((img) => img.fileName) ?? [];
-      return {
-        ...product,
-        images: this.mapImageNames(fileNames),
-      };
+    return {
+      ...(product as Omit<Product, 'images' | 'category' | 'tags'>),
+      category: product.category,
+      tags: product.tags,
+      images: this.mapImageNames(fileNames),
+    };
     }
 
-    const snap = snapshot ?? {};
-    const fileNames: string[] = Array.isArray((snap as any).images) ? (snap as any).images : [];
+    const snap: ProductSnapshot =
+      snapshot ?? {
+        id: '',
+        title: 'Producto',
+        price: 0,
+        slug: '',
+        stock: 0,
+        isFeatured: false,
+        images: [],
+        description: '',
+      };
+    const fileNames: string[] = Array.isArray(snap.images) ? snap.images : [];
     return {
-      ...snap,
+      ...(snap as Partial<Omit<Product, 'images' | 'category' | 'tags'>>),
+      id: snap.id,
+      title: snap.title,
+      price: snap.price,
+      description: snap.description,
+      slug: snap.slug,
+      stock: snap.stock,
+      isFeatured: snap.isFeatured,
+      category: snap.category,
+      tags: snap.tags,
       images: this.mapImageNames(fileNames),
     };
   }
@@ -235,7 +308,7 @@ export class OrdersService {
     return fileNames.map((fileName) => this.fileService.getPublicUrl('products', fileName));
   }
 
-  private buildProductSnapshot(product: Product) {
+  private buildProductSnapshot(product: Product): ProductSnapshot {
     return {
       id: product.id,
       title: product.title,
@@ -250,5 +323,143 @@ export class OrdersService {
         : undefined,
       tags: product.tags?.map((tag) => ({ id: tag.id, name: tag.name })) ?? [],
     };
+  }
+
+  private async sendOrderMail(user: User, order: MappedOrder) {
+    const currency = this.formatCurrency(order.total);
+    const createdAt = new Date(order.createdAt).toLocaleString('es-PY', {
+      timeZone: 'America/Asuncion',
+    });
+    const itemsRows = order.items
+      ?.map(
+        (item) => `
+        <tr>
+          <td style="padding:12px 0;">
+            <div style="display:flex;gap:12px;align-items:center;">
+              ${this.renderProductImage(item.product?.images?.[0])}
+              <div style="flex:1;">
+                <div style="font-weight:600;color:#0b1727;font-size:15px;">${item.product?.title ?? 'Producto'}</div>
+                <div style="color:#4b5563;font-size:13px;">${item.product?.description ?? ''}</div>
+                <div style="color:#111827;font-size:13px;margin-top:4px;">${item.quantity} x ${this.formatCurrency(item.unitPrice)}</div>
+              </div>
+              <div style="font-weight:600;color:#0b1727;">${this.formatCurrency(
+                item.quantity * item.unitPrice,
+              )}</div>
+            </div>
+          </td>
+        </tr>
+      `,
+      )
+      .join('');
+
+    const shipping = this.renderAddressBlock('Dirección de envío', order.shippingAddress);
+    const billing = this.renderBillingBlock('Facturación', order.billingProfile);
+
+    const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;background:#f5f7fb;padding:24px;color:#111827;">
+      <div style="max-width:700px;margin:0 auto;background:#fff;border-radius:12px;box-shadow:0 8px 20px rgba(15,23,42,0.08);overflow:hidden;">
+        <div style="padding:24px 28px;border-bottom:1px solid #e5e7eb;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <div>
+              <div style="color:#6b7280;font-size:13px;font-weight:600;letter-spacing:0.3px;">${order.orderNumber}</div>
+              <div style="font-size:22px;font-weight:700;color:#0f172a;margin-top:6px;text-transform:capitalize;">${order.status ?? 'pendiente'}</div>
+              <div style="color:#6b7280;font-size:13px;margin-top:4px;">${createdAt}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:14px;font-weight:600;color:#0ea5e9;margin-bottom:2px;">Gs.</div>
+              <div style="font-size:22px;font-weight:800;color:#0f172a;">${currency}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;border-bottom:1px solid #e5e7eb;">
+          ${shipping}
+          ${billing}
+        </div>
+
+        <div style="padding:20px 24px;">
+          <div style="font-size:16px;font-weight:700;color:#0f172a;margin-bottom:12px;">Productos</div>
+          <table style="width:100%;border-collapse:collapse;">
+            <tbody>
+              ${itemsRows}
+            </tbody>
+          </table>
+          <div style="margin-top:16px;text-align:right;font-weight:700;color:#0f172a;">Total: ${currency}</div>
+        </div>
+
+        <div style="padding:18px 24px;background:#0ea5e9;color:#fff;text-align:center;font-weight:600;">
+          ¡Gracias por tu compra, ${user.fullName ?? user.email}!
+        </div>
+      </div>
+    </div>
+    `;
+
+    await this.mailService.send({
+      to: user.email,
+      subject: `Confirmación de pedido ${order.orderNumber}`,
+      html,
+    });
+  }
+
+  private renderProductImage(url?: string) {
+    if (!url) {
+      return `<div style="width:72px;height:72px;border-radius:8px;background:#f3f4f6;"></div>`;
+    }
+    return `<img src="${url}" alt="Producto" width="72" height="72" style="object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;">`;
+  }
+
+  private renderAddressBlock(title: string, address?: Record<string, any> | null) {
+    if (!address) {
+      return `<div style="border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;background:#f9fafb;color:#6b7280;">${title}: No provisto</div>`;
+    }
+
+    const lines = [
+      address.fullName,
+      address.phone,
+      [address.street, address.apartment].filter(Boolean).join(' '),
+      [address.city, address.state, address.country].filter(Boolean).join(', '),
+      address.postalCode,
+      address.notes,
+    ]
+      .filter(Boolean)
+      .map((line) => `<div style="line-height:1.5;">${line}</div>`)
+      .join('');
+
+    return `
+      <div style="border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;background:#f9fafb;">
+        <div style="font-weight:700;color:#0f172a;margin-bottom:6px;">${title}</div>
+        <div style="color:#374151;font-size:13px;">${lines}</div>
+      </div>
+    `;
+  }
+
+  private renderBillingBlock(title: string, billing?: Record<string, any> | null) {
+    if (!billing) {
+      return this.renderAddressBlock(title, null);
+    }
+
+    const lines = [
+      billing.legalName ?? billing.fullName,
+      billing.taxId ? `RUC: ${billing.taxId}` : null,
+      [billing.email, billing.phone].filter(Boolean).join(' · '),
+      [billing.addressLine1, billing.addressLine2].filter(Boolean).join(', '),
+      [billing.city, billing.state, billing.country].filter(Boolean).join(', '),
+      billing.postalCode,
+    ]
+      .filter(Boolean)
+      .map((line) => `<div style="line-height:1.5;">${line}</div>`)
+      .join('');
+
+    return `
+      <div style="border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;background:#f9fafb;">
+        <div style="font-weight:700;color:#0f172a;margin-bottom:6px;">${title}</div>
+        <div style="color:#374151;font-size:13px;">${lines}</div>
+      </div>
+    `;
+  }
+
+  private formatCurrency(amount: number | null | undefined) {
+    if (amount === null || amount === undefined) return 'Gs. 0';
+    return `Gs. ${new Intl.NumberFormat('es-PY').format(amount)}`;
   }
 }
