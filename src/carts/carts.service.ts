@@ -7,6 +7,7 @@ import { User } from 'src/auth/entities/user.entity';
 import { Product } from 'src/products/entities/product.entity';
 import { CreateCartItemDto } from './dto/create-cart-item.dto';
 import { UpdateCartItemDto } from './dto/update-card-item.dto';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class CartsService {
@@ -19,6 +20,8 @@ export class CartsService {
 
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+
+    private readonly fileService: FilesService,
   ) {}
 
   async getUserCart(user: User): Promise<Cart> {
@@ -32,6 +35,11 @@ export class CartsService {
     }
 
     return cart;
+  }
+
+  async getCart(user: User) {
+    const cart = await this.getUserCart(user);
+    return this.mapCartResponse(cart);
   }
 
   async addItem(user: User, createCartItemDto: CreateCartItemDto) {
@@ -52,7 +60,7 @@ export class CartsService {
     }
 
     await this.cartRepository.save(cart);
-    return cart;
+    return this.mapCartResponse(cart);
   }
 
   async updateItem(user: User, itemId: string, updateCartItemDto: UpdateCartItemDto) {
@@ -62,7 +70,7 @@ export class CartsService {
 
     Object.assign(item, updateCartItemDto);
     await this.cartRepository.save(cart);
-    return cart;
+    return this.mapCartResponse(cart);
   }
 
   async removeItem(user: User, itemId: string) {
@@ -72,18 +80,34 @@ export class CartsService {
 
     cart.items.splice(itemIndex, 1);
     await this.cartRepository.save(cart);
-    return cart;
+    return this.mapCartResponse(cart);
   }
 
   async clearCart(user: User) {
     const cart = await this.getUserCart(user);
     cart.items = [];
     await this.cartRepository.save(cart);
-    return cart;
+    return this.mapCartResponse(cart);
   }
 
   async removeAll() {
     await this.cartItemRepository.createQueryBuilder().delete().where({}).execute();
     await this.cartRepository.createQueryBuilder().delete().where({}).execute();
+  }
+
+  private mapCartResponse(cart: Cart) {
+    const mapImages = (product: Product) =>
+      product.images?.map((img) => this.fileService.getPublicUrl('products', img.fileName)) ?? [];
+
+    return {
+      ...cart,
+      items: cart.items?.map((item) => ({
+        ...item,
+        product: {
+          ...item.product,
+          images: mapImages(item.product),
+        },
+      })),
+    };
   }
 }

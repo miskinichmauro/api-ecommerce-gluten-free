@@ -9,6 +9,8 @@ import { Repository } from 'typeorm';
 import { CheckoutDto } from './dto/checkout.dto';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
+import { FilesService } from 'src/files/files.service';
+import { Product } from 'src/products/entities/product.entity';
 
 @Injectable()
 export class OrdersService {
@@ -23,6 +25,7 @@ export class OrdersService {
     private readonly billingRepository: Repository<BillingProfile>,
     @InjectRepository(Cart)
     private readonly cartRepository: Repository<Cart>,
+    private readonly fileService: FilesService,
   ) {}
 
   async checkout(user: User, checkoutDto: CheckoutDto) {
@@ -90,17 +93,19 @@ export class OrdersService {
     cart.updatedAt = new Date();
     await this.cartRepository.save(cart);
 
-    return order;
+    return this.mapOrderResponse(order);
   }
 
   async findAll(user: User, paginationDto: PaginationDto) {
     const { limit = 10, offset = 0 } = paginationDto;
-    return this.orderRepository.find({
+    const orders = await this.orderRepository.find({
       where: { user: { id: user.id } },
       order: { createdAt: 'DESC' },
       take: limit,
       skip: offset,
     });
+
+    return orders.map((order) => this.mapOrderResponse(order));
   }
 
   async findOne(user: User, id: string) {
@@ -112,7 +117,7 @@ export class OrdersService {
       throw new NotFoundException('Pedido no encontrado');
     }
 
-    return order;
+    return this.mapOrderResponse(order);
   }
 
   private async generateOrderNumber(): Promise<string> {
@@ -135,5 +140,21 @@ export class OrdersService {
     }
 
     throw new BadRequestException('No se pudo generar el numero de pedido');
+  }
+
+  private mapOrderResponse(order: Order) {
+    const mapImages = (product: Product) =>
+      product.images?.map((img) => this.fileService.getPublicUrl('products', img.fileName)) ?? [];
+
+    return {
+      ...order,
+      items: order.items?.map((item) => ({
+        ...item,
+        product: {
+          ...item.product,
+          images: mapImages(item.product),
+        },
+      })),
+    };
   }
 }

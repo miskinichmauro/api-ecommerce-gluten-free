@@ -15,7 +15,7 @@ export class CartsController {
   @Get()
   @ApiOperation({ summary: 'Obtiene el carrito actual del usuario autenticado' })
   async getCart(@GetUser() user: User) {
-    return await this.cartService.getUserCart(user);
+    return await this.cartService.getCart(user);
   }
 
   @Post('items')
