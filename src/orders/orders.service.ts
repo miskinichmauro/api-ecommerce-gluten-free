@@ -371,12 +371,12 @@ export class OrdersService {
 
     const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;background:#eef2f7;padding:24px;color:#0f172a;">
-      <div style="max-width:700px;margin:0 auto;background:#fff;border-radius:16px;box-shadow:0 18px 38px rgba(15,23,42,0.12);overflow:hidden;">
-        <div style="padding:28px 32px;border-bottom:1px solid #e5e7eb;background:#f8fafc;">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+      <div style="max-width:700px;margin:0 auto;background:#fff;border-radius:18px;box-shadow:0 20px 40px rgba(15,23,42,0.14);overflow:hidden;">
+        <div style="padding:28px 34px;border-bottom:1px solid #e5e7eb;background:#f7f9fc;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
             <div>
               <div style="font-size:12px;font-weight:600;letter-spacing:0.3px;color:#7c8895;">${order.orderNumber}</div>
-        <div style="font-size:24px;font-weight:700;color:#111827;margin-top:6px;text-transform:capitalize;">${order.status ?? 'pendiente'}</div>
+              <div style="font-size:24px;font-weight:700;color:#111827;margin-top:6px;text-transform:capitalize;">${order.status ?? 'pendiente'}</div>
               <div style="font-size:13px;color:#6b7280;margin-top:4px;">${createdAt}</div>
             </div>
             <div style="text-align:right;">
@@ -388,27 +388,26 @@ export class OrdersService {
 
         <div
           style="
-            padding:24px;
+            padding:28px 32px;
             display:grid;
             grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-            gap:18px;
-            row-gap:20px;
+            gap:20px;
+            row-gap:24px;
             background:#fff;
-            border-bottom:1px solid #e5e7eb;
           "
         >
           ${shipping}
           ${billing}
         </div>
 
-        <div style="padding:24px 28px;background:#fff;">
-          <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:12px;">Productos</div>
-          <table style="width:100%;border-collapse:collapse;">
+        <div style="padding:26px 30px 28px;background:#fff;">
+          <div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:16px;">Productos</div>
+          <table style="width:100%;border-collapse:separate;border-spacing:0 12px;">
             <tbody>
               ${itemsRows}
             </tbody>
           </table>
-          <div style="margin-top:18px;text-align:right;font-size:16px;font-weight:700;color:#111827;">
+          <div style="margin-top:10px;text-align:right;font-size:16px;font-weight:700;color:#111827;">
             <span style="opacity:0.7;">Total:</span>&nbsp;${currency}
           </div>
         </div>
