@@ -16,11 +16,7 @@ export class AuthController {
     summary: 'Permite añadir un nuevo usuario',
   })
   async create(@Body() createUserDto: CreateUserDto) {
-    try {
-      return await this.authService.create(createUserDto);
-    } catch (error) {
-      this.authService.handleDbErrorExceptions(error);
-    }
+    return this.authService.create(createUserDto);
   }
 
   @Post('login')

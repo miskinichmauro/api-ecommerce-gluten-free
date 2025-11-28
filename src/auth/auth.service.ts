@@ -28,7 +28,12 @@ export class AuthService {
       ...userData,
       password: bcrypt.hashSync(password, 10),
     });
-    await this.userRepository.save(user);
+
+    try {
+      await this.userRepository.save(user);
+    } catch (error) {
+      this.handleDbErrorExceptions(error);
+    }
 
     return {
       user: this.stripPassword(user),
@@ -77,14 +82,19 @@ export class AuthService {
   }
 
   handleDbErrorExceptions(error: unknown) {
-    if (this.isPostgresError(error) && error.code === '23505')
+    if (this.isPostgresError(error) && error.code === '23505') {
+      const detail = error.detail ?? 'El dato ya existe';
+      const isEmailDuplicate = typeof detail === 'string' && detail.toLowerCase().includes('email');
       throw new BadRequestException({
-        message: error.detail ?? 'El dato ya existe',
+        message: isEmailDuplicate
+          ? 'Ya existe una cuenta con ese correo. Si olvidaste la contraseña puedes restablecerla.'
+          : detail,
         code: 'AUTH_CONFLICT',
         expose: true,
       });
+    }
 
-    console.log(error);
+    console.error(error);
     throw new InternalServerErrorException({
       message: 'Ocurrió un error inesperado. Por favor, verifica los logs.',
       code: 'AUTH_UNEXPECTED_ERROR',
@@ -100,5 +110,5 @@ export class AuthService {
 
   private isPostgresError(error: unknown): error is { code?: string; detail?: string } {
     return typeof error === 'object' && error !== null && 'code' in error;
-   }
+  }
 }
