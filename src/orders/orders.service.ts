@@ -358,7 +358,8 @@ export class OrdersService {
     const itemsRows =
       order.items
         ?.map((item) => {
-          const img = (item.product?.images ?? [])[0] ?? '';
+          const imgVariant = (item.product?.images ?? [])[0];
+          const img = imgVariant?.small ?? imgVariant?.original ?? '';
           const title = item.product?.title ?? 'Producto';
           const desc = item.product?.description ?? '';
           const quantity = item.quantity ?? 1;
@@ -371,10 +372,15 @@ export class OrdersService {
                 <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:12px;">
                   <tr>
                     <!-- IMAGE -->
-                    <td width="140" style="padding:0;">
-                      <img src="${img}" alt="${title}"
-                        style="display:block;width:140px;height:100px;object-fit:cover;border-radius:12px 0 0 12px;">
-                    </td>
+                  <td
+                    width="140"
+                    valign="top"
+                    align="left"
+                    style="padding:0;vertical-align:top;text-align:left;"
+                  >
+                    <img src="${img}" alt="${title}"
+                      style="display:block;width:140px;height:100px;object-fit:cover;border-radius:12px 0 0 12px;">
+                  </td>
 
                     <!-- TEXT -->
                     <td style="padding:10px 14px;font-family:Arial,Helvetica,sans-serif;">
@@ -477,8 +483,17 @@ export class OrdersService {
           ${itemsRows}
 
           <tr>
-            <td style="padding-top:16px;text-align:right;font-size:16px;font-weight:700;color:#111827;">
-              Total: ${currency}
+            <td style="padding-top:16px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td
+                    align="right"
+                    style="font-size:16px;font-weight:700;color:#111827;text-align:right;"
+                  >
+                    Total: ${currency}
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
