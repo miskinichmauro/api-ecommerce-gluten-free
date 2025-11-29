@@ -243,13 +243,12 @@ export class OrdersService {
     const createdAtParaguay = this.formatDateToParaguay(order.createdAt);
 
     const items: MappedOrderItem[] | undefined = order.items?.map((item) => {
-      const product = this.mapProductWithImages(
-        item.product,
-        item.productSnapshot as ProductSnapshot | null | undefined,
-      );
+      const snapshot = item.productSnapshot as ProductSnapshot | null | undefined;
+      const product = this.mapProductWithImages(item.product, snapshot);
       return {
         ...item,
         product,
+        productSnapshot: this.buildProductSnapshotWithFullUrls(snapshot),
       };
     });
 
@@ -325,6 +324,19 @@ export class OrdersService {
         ? { id: product.category.id, name: product.category.name, description: product.category.description }
         : undefined,
       tags: product.tags?.map((tag) => ({ id: tag.id, name: tag.name })) ?? [],
+    };
+  }
+
+  private buildProductSnapshotWithFullUrls(
+    snapshot?: ProductSnapshot | null,
+  ): ProductSnapshot | null {
+    if (!snapshot) {
+      return null;
+    }
+    const imageFileNames = Array.isArray(snapshot.images) ? snapshot.images : [];
+    return {
+      ...snapshot,
+      images: this.mapImageNames(imageFileNames),
     };
   }
 
