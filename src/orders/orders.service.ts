@@ -361,36 +361,44 @@ export class OrdersService {
           const subtotal = this.formatCurrency((item.unitPrice ?? 0) * quantity);
 
           return `
-          <tr>
-            <td style="padding:12px 0;">
-              <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:12px;">
-                <tr>
-                  <!-- IMAGE -->
-                  <td width="140" style="padding:0;">
-                    <img src="${img}" alt="${title}"
-                      style="display:block;width:140px;height:100px;object-fit:cover;border-radius:12px 0 0 12px;">
-                  </td>
+            <tr>
+              <td style="padding:12px 0;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:12px;">
+                  <tr>
+                    <!-- IMAGE -->
+                    <td width="140" style="padding:0;">
+                      <img src="${img}" alt="${title}"
+                        style="display:block;width:140px;height:100px;object-fit:cover;border-radius:12px 0 0 12px;">
+                    </td>
 
-                  <!-- TEXT -->
-                  <td style="padding:10px 14px;font-family:Arial,Helvetica,sans-serif;">
-                    <div style="font-size:15px;font-weight:600;color:#111827;line-height:1.3;">
-                      ${title}
-                    </div>
+                    <!-- TEXT -->
+                    <td style="padding:10px 14px;font-family:Arial,Helvetica,sans-serif;">
+                      <div style="font-size:15px;font-weight:600;color:#111827;line-height:1.3;">
+                        ${title}
+                      </div>
 
-                    <div style="margin-top:4px;font-size:13px;color:#6b7280;line-height:1.4;">
-                      ${desc}
-                    </div>
+                      <div style="margin-top:4px;font-size:13px;color:#6b7280;line-height:1.4;">
+                        ${desc}
+                      </div>
 
-                    <div style="margin-top:10px;display:flex;justify-content:space-between;font-size:13px;color:#6b7280;">
-                      <span>${quantity} × ${unitPrice}</span>
-                      <span style="font-weight:700;color:#111827;">${subtotal}</span>
-                    </div>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        `;
+                      <div style="margin-top:10px;font-size:13px;color:#6b7280;">
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                          <tr>
+                            <td style="font-size:13px;color:#6b7280;">
+                              ${quantity} × ${unitPrice}
+                            </td>
+                            <td align="right" style="font-size:13px;font-weight:700;color:#111827;">
+                              ${subtotal}
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          `;
         })
         .join('') ??
       `<tr><td style="font-size:14px;color:#6b7280;">No hay items en este pedido.</td></tr>`;
@@ -406,7 +414,7 @@ export class OrdersService {
 
     const html = `
       <div style="width:100%;background:#f3f4f6;padding:24px 0;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
-        <table align="center" width="600" cellpadding="0" cellspacing="0" style="background:white;border-radius:14px;padding:20px;border:1px solid #e5e7eb;">
+        <table align="center" width="700" cellpadding="0" cellspacing="0" style="background:white;border-radius:14px;padding:20px;border:1px solid #e5e7eb;">
           
           <tr>
             <td>
@@ -472,12 +480,9 @@ export class OrdersService {
           <tr>
             <td style="padding-top:24px;text-align:center;">
               <div style="
-                background:#0ea5e9;
-                color:white;
-                padding:14px 16px;
-                border-radius:12px;
                 font-size:14px;
                 font-weight:600;
+                color:#111827;
               ">
                 ¡Gracias por tu compra, ${user.fullName ?? user.email}!
               </div>
@@ -493,7 +498,6 @@ export class OrdersService {
       html,
     });
   }
-
 
 
   private renderAddressBlock(title: string, address?: Record<string, any> | null) {
