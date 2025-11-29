@@ -18,8 +18,9 @@ import { User } from 'src/auth/entities/user.entity';
 import { Category } from 'src/categories/entities/category.entity';
 import { Tag } from 'src/tags/entities/tag.entity';
 import { FilesService } from 'src/files/files.service';
+import type { ImageVariantSet } from 'src/files/files.service';
 
-type ProductWithImages = Omit<Product, 'images'> & { images?: string[] };
+type ProductWithImages = Omit<Product, 'images'> & { images?: ImageVariantSet[] };
 
 @Injectable()
 export class ProductsService {
@@ -79,6 +80,12 @@ export class ProductsService {
       imageIds.length > 0
         ? this.fileService.getFileNamesFromIds(this.fileType, imageIds)
         : imageFileNames;
+
+    await Promise.all(
+      imageFileNamesResolved.map((fileName) =>
+        this.fileService.ensureImageVariants(this.fileType, fileName),
+      ),
+    );
 
     const newProduct = this.productRepository.create({
       ...productDetails,
@@ -226,6 +233,11 @@ export class ProductsService {
         product.images = imageFileNames.map((fileName) =>
           this.productImageRepository.create({ fileName }),
         );
+        await Promise.all(
+          imageFileNames.map((fileName) =>
+            this.fileService.ensureImageVariants(this.fileType, fileName),
+          ),
+        );
       }
 
       product.user = user;
@@ -270,7 +282,7 @@ export class ProductsService {
   private mapProductResponse(product: Product): ProductWithImages {
     const images =
       product.images?.map((img) =>
-        this.fileService.getPublicUrl(this.fileType, img.fileName),
+        this.fileService.getImageVariants(this.fileType, img.fileName),
       ) ?? [];
 
     return {

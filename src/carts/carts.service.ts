@@ -112,7 +112,7 @@ export class CartsService {
 
   private mapCartResponse(cart: Cart) {
     const mapImages = (product: Product) =>
-      product.images?.map((img) => this.fileService.getPublicUrl('products', img.fileName)) ?? [];
+      product.images?.map((img) => this.fileService.getImageVariants('products', img.fileName)) ?? [];
 
     return {
       ...cart,

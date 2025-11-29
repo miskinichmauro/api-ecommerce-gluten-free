@@ -10,6 +10,7 @@ import { CheckoutDto } from './dto/checkout.dto';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { FilesService } from 'src/files/files.service';
+import type { ImageVariantSet } from 'src/files/files.service';
 import { Product } from 'src/products/entities/product.entity';
 import { Category } from 'src/categories/entities/category.entity';
 import { Tag } from 'src/tags/entities/tag.entity';
@@ -31,13 +32,17 @@ type ProductSnapshot = {
   tags?: SnapshotTag[];
 };
 
+type ProductSnapshotWithUrls = Omit<ProductSnapshot, 'images'> & {
+  images: ImageVariantSet[];
+};
+
 type MappedProduct =
   | (Omit<Product, 'images' | 'category' | 'tags'> & {
-      images: string[];
+      images: ImageVariantSet[];
       category?: Category | SnapshotCategory;
       tags?: (Tag | SnapshotTag)[];
     })
-  | (Partial<Omit<Product, 'images' | 'category' | 'tags'>> & ProductSnapshot);
+  | (Partial<Omit<Product, 'images' | 'category' | 'tags'>> & ProductSnapshotWithUrls);
 type MappedOrderItem = Omit<OrderItem, 'product'> & { product: MappedProduct | null };
 type MappedOrder = Omit<Order, 'items' | 'shippingAddress' | 'billingProfile'> & {
   items?: MappedOrderItem[];
@@ -271,12 +276,12 @@ export class OrdersService {
   ): MappedProduct {
     if (product) {
       const fileNames = product.images?.map((img) => img.fileName) ?? [];
-    return {
-      ...(product as Omit<Product, 'images' | 'category' | 'tags'>),
-      category: product.category,
-      tags: product.tags,
-      images: this.mapImageNames(fileNames),
-    };
+      return {
+        ...(product as Omit<Product, 'images' | 'category' | 'tags'>),
+        category: product.category,
+        tags: product.tags,
+        images: this.mapImageVariants(fileNames),
+      };
     }
 
     const snap: ProductSnapshot =
@@ -302,12 +307,12 @@ export class OrdersService {
       isFeatured: snap.isFeatured,
       category: snap.category,
       tags: snap.tags,
-      images: this.mapImageNames(fileNames),
+      images: this.mapImageVariants(fileNames),
     };
   }
 
-  private mapImageNames(fileNames: string[]) {
-    return fileNames.map((fileName) => this.fileService.getPublicUrl('products', fileName));
+  private mapImageVariants(fileNames: string[]) {
+    return fileNames.map((fileName) => this.fileService.getImageVariants('products', fileName));
   }
 
   private buildProductSnapshot(product: Product): ProductSnapshot {
@@ -329,14 +334,14 @@ export class OrdersService {
 
   private buildProductSnapshotWithFullUrls(
     snapshot?: ProductSnapshot | null,
-  ): ProductSnapshot | null {
+  ): ProductSnapshotWithUrls | null {
     if (!snapshot) {
       return null;
     }
     const imageFileNames = Array.isArray(snapshot.images) ? snapshot.images : [];
     return {
       ...snapshot,
-      images: this.mapImageNames(imageFileNames),
+      images: this.mapImageVariants(imageFileNames),
     };
   }
 

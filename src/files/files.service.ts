@@ -1,12 +1,14 @@
 ﻿import { existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { extname, join } from 'path';
 import { ConfigService } from '@nestjs/config';
 import type { Express } from 'express';
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import sharp from 'sharp';
 import { normalizeSlug } from 'src/common/utils/util';
 
 interface StoredFileMeta {
@@ -18,13 +20,23 @@ interface StoredFileMeta {
   createdAt: Date;
 }
 
+const IMAGE_VARIANT_WIDTHS = {
+  small: 320,
+  medium: 640,
+} as const;
+
+type ImageVariantName = keyof typeof IMAGE_VARIANT_WIDTHS;
+export type ImageSizeVariant = ImageVariantName | 'original';
+export type ImageVariantSet = Record<ImageSizeVariant, string>;
+
 @Injectable()
 export class FilesService {
   private readonly storage = new Map<string, Map<string, StoredFileMeta>>();
+  private readonly logger = new Logger(FilesService.name);
 
   constructor(private readonly configService: ConfigService) {}
 
-  uploadFile(type: string, file: Express.Multer.File) {
+  async uploadFile(type: string, file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException({
         message: 'Asegúrate de que el archivo sea una imagen válida',
@@ -35,9 +47,15 @@ export class FilesService {
 
     const normalizedType = this.normalizeType(type);
     const metadata = this.registerFileMetadata(normalizedType, file);
+    await this.generateResizedImages(normalizedType, metadata.fileName);
     const url = this.buildPublicUrl(normalizedType, metadata.fileName);
 
     return { id: metadata.fileName, name: metadata.fileName, url };
+  }
+
+  async ensureImageVariants(type: string, fileName: string) {
+    const normalizedType = this.normalizeType(type);
+    await this.generateResizedImages(normalizedType, fileName);
   }
 
   getFileNamesFromIds(type: string, ids: string[]): string[] {
@@ -48,10 +66,23 @@ export class FilesService {
     return ids.map((id) => this.getMetadataOrFail(normalizedType, id).fileName);
   }
 
-  getPublicUrl(type: string, fileName: string): string {
+  getPublicUrl(
+    type: string,
+    fileName: string,
+    variant: ImageSizeVariant = 'original',
+  ): string {
     const normalizedType = this.normalizeType(type);
-    this.getMetadataOrFail(normalizedType, fileName);
-    return this.buildPublicUrl(normalizedType, fileName);
+    const targetFileName = this.buildVariantFileName(fileName, variant);
+    this.getMetadataOrFail(normalizedType, targetFileName);
+    return this.buildPublicUrl(normalizedType, targetFileName);
+  }
+
+  getImageVariants(type: string, fileName: string): ImageVariantSet {
+    return {
+      original: this.getPublicUrl(type, fileName, 'original'),
+      small: this.getSafeVariantUrl(type, fileName, 'small'),
+      medium: this.getSafeVariantUrl(type, fileName, 'medium'),
+    };
   }
 
   findOne(type: string, fileName: string): string {
@@ -142,6 +173,68 @@ export class FilesService {
 
   private normalizeType(type?: string): string {
     return normalizeSlug(type ?? 'products');
+  }
+
+  private async generateResizedImages(type: string, fileName: string) {
+    const originalPath = this.buildAbsolutePath(type, fileName);
+    if (!existsSync(originalPath)) {
+      return;
+    }
+
+    const variants = Object.keys(IMAGE_VARIANT_WIDTHS) as ImageVariantName[];
+    await Promise.all(
+      variants.map(async (variant) => {
+        const variantFileName = this.buildVariantFileName(fileName, variant);
+        const variantPath = this.buildAbsolutePath(type, variantFileName);
+
+        try {
+          await sharp(originalPath)
+            .resize({ width: IMAGE_VARIANT_WIDTHS[variant], withoutEnlargement: true })
+            .toFile(variantPath);
+          this.registerVariantMetadata(type, variantFileName, fileName, variant);
+        } catch (error) {
+          this.logger.warn(
+            `No se pudo generar la variante ${variant} para ${fileName}: ${error}`,
+          );
+        }
+      }),
+    );
+  }
+
+  private buildVariantFileName(fileName: string, variant: ImageSizeVariant) {
+    if (variant === 'original') {
+      return fileName;
+    }
+
+    const extension = extname(fileName);
+    const base = extension ? fileName.slice(0, -extension.length) : fileName;
+    return `${base}-${variant}${extension}`;
+  }
+
+  private registerVariantMetadata(
+    type: string,
+    fileName: string,
+    originalFileName: string,
+    variant: ImageVariantName,
+  ) {
+    const metadata: StoredFileMeta = {
+      id: fileName,
+      type,
+      fileName,
+      originalName: `${originalFileName} (${variant})`,
+      mimeType: this.guessMimeType(fileName),
+      createdAt: new Date(),
+    };
+
+    this.getTypeStorage(type).set(metadata.id, metadata);
+  }
+
+  private getSafeVariantUrl(type: string, fileName: string, variant: ImageVariantName) {
+    try {
+      return this.getPublicUrl(type, fileName, variant);
+    } catch {
+      return this.getPublicUrl(type, fileName, 'original');
+    }
   }
 
   private guessMimeType(fileName: string): string {
