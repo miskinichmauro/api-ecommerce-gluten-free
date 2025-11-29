@@ -334,12 +334,9 @@ export class OrdersService {
       order.createdAtParaguay ?? this.formatDateToParaguay(order.createdAt) ?? '';
 
     const status =
-      (order.status ?? 'pending')
-        .toString()
-        .replace('_', ' ')
-        .toLowerCase() === 'pending'
+      (order.status ?? 'pending').toString().toLowerCase() === 'pending'
         ? 'Pendiente'
-        : (order.status ?? '').toString();
+        : order.status;
 
     const itemsRows =
       order.items
@@ -352,72 +349,39 @@ export class OrdersService {
           const subtotal = this.formatCurrency((item.unitPrice ?? 0) * quantity);
 
           return `
-          <div
-            style="
-              display:flex;
-              background:#ffffff;
-              border:1px solid #e5e7eb;
-              border-radius:12px;
-              overflow:hidden;
-              margin-bottom:12px;
-            "
-          >
-            <a
-              href="#"
-              style="
-                width:150px;
-                flex-shrink:0;
-                display:block;
-              "
-            >
-              <img
-                src="${img}"
-                alt="${title}"
-                style="width:100%;height:110px;object-fit:cover;display:block;"
-              />
-            </a>
-            <div style="flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;">
-              <div>
-                <a
-                  href="#"
-                  style="
-                    margin:0;
-                    font-weight:600;
-                    font-size:15px;
-                    color:#111827;
-                    text-decoration:none;
-                    display:block;
-                  "
-                >
-                  ${title}
-                </a>
-                <p style="margin:4px 0 0;font-size:13px;color:#6b7280;line-height:1.4;">
-                  ${desc}
-                </p>
-              </div>
-              <div
-                style="
-                  display:flex;
-                  justify-content:space-between;
-                  align-items:flex-end;
-                  margin-top:auto;
-                  font-size:13px;
-                  color:#4b5563;
-                "
-              >
-                <span>
-                  ${quantity} x ${unitPrice}
-                </span>
-                <span style="font-weight:700;color:#111827;">
-                  ${subtotal}
-                </span>
-              </div>
-            </div>
-          </div>
+          <tr>
+            <td style="padding:12px 0;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:12px;">
+                <tr>
+                  <!-- IMAGE -->
+                  <td width="140" style="padding:0;">
+                    <img src="${img}" alt="${title}"
+                      style="display:block;width:140px;height:100px;object-fit:cover;border-radius:12px 0 0 12px;">
+                  </td>
+
+                  <!-- TEXT -->
+                  <td style="padding:10px 14px;font-family:Arial,Helvetica,sans-serif;">
+                    <div style="font-size:15px;font-weight:600;color:#111827;line-height:1.3;">
+                      ${title}
+                    </div>
+
+                    <div style="margin-top:4px;font-size:13px;color:#6b7280;line-height:1.4;">
+                      ${desc}
+                    </div>
+
+                    <div style="margin-top:10px;display:flex;justify-content:space-between;font-size:13px;color:#6b7280;">
+                      <span>${quantity} × ${unitPrice}</span>
+                      <span style="font-weight:700;color:#111827;">${subtotal}</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
         `;
         })
-        .join('') ||
-      `<p style="margin:0;font-size:14px;color:#6b7280;">No hay items en este pedido.</p>`;
+        .join('') ??
+      `<tr><td style="font-size:14px;color:#6b7280;">No hay items en este pedido.</td></tr>`;
 
     const shipping = this.renderAddressBlock(
       'Dirección de envío',
@@ -429,69 +393,86 @@ export class OrdersService {
     );
 
     const html = `
-    <div style="font-family:Arial,Helvetica,sans-serif;background:#f3f4f6;padding:24px;color:#0f172a;">
-      <div style="max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:16px;">
+      <div style="width:100%;background:#f3f4f6;padding:24px 0;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+        <table align="center" width="600" cellpadding="0" cellspacing="0" style="background:white;border-radius:14px;padding:20px;border:1px solid #e5e7eb;">
+          
+          <tr>
+            <td>
+              <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:18px;">
+                <tr>
+                  <td>
+                    <div style="font-size:13px;color:#6b7280;">${order.orderNumber}</div>
+                    <div style="font-size:24px;font-weight:700;color:#111827;margin-top:4px;">${status}</div>
+                    <div style="font-size:12px;color:#6b7280;margin-top:4px;">${createdAt}</div>
+                  </td>
 
-        <!-- ENCABEZADO (igual al front en lógica) -->
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-          <div>
-            <p style="margin:0;font-size:13px;color:#6b7280;">
-              ${order.orderNumber ?? order.id}
-            </p>
-            <p style="margin:4px 0 0;font-size:24px;font-weight:700;color:#111827;">
-              ${status}
-            </p>
-            <p style="margin:4px 0 0;font-size:12px;color:#6b7280;">
-              ${createdAt}
-            </p>
-          </div>
-          <div style="text-align:right;">
-            <p style="margin:0;font-size:20px;font-weight:700;color:#0f172a;">
-              ${currency}
-            </p>
-          </div>
-        </div>
+                  <td align="right" style="font-size:20px;font-weight:700;color:#0f172a;">
+                    ${currency}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-        <div
-          style="
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-            gap:16px;
-          "
-        >
-          ${shipping}
-          ${billing}
-        </div>
+          <!-- SHIPPING + BILLING -->
+          <tr>
+            <td>
+              <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:20px;">
+                <tr>
+                  <td width="50%" style="
+                    border:1px solid #e5e7eb;
+                    border-radius:12px;
+                    padding:12px;
+                    vertical-align:top;
+                  ">
+                    ${shipping}
+                  </td>
 
-        <div style="padding:20px;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;">
-          <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827;">
-            Productos
-          </p>
+                  <td width="12"></td>
+
+                  <td width="50%" style="
+                    border:1px solid #e5e7eb;
+                    border-radius:12px;
+                    padding:12px;
+                    vertical-align:top;
+                  ">
+                    ${billing}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="font-size:18px;font-weight:700;margin-bottom:8px;">
+              Productos
+            </td>
+          </tr>
 
           ${itemsRows}
 
-          <div style="text-align:right;font-size:16px;font-weight:700;margin-top:12px;color:#111827;">
-            Total: ${currency}
-          </div>
-        </div>
+          <tr>
+            <td style="padding-top:16px;text-align:right;font-size:16px;font-weight:700;color:#111827;">
+              Total: ${currency}
+            </td>
+          </tr>
 
-        <div
-          style="
-            margin-top:8px;
-            padding:14px 16px;
-            background:#0ea5e9;
-            color:#ffffff;
-            text-align:center;
-            border-radius:12px;
-            font-size:14px;
-            font-weight:600;
-          "
-        >
-          ¡Gracias por tu compra, ${user.fullName ?? user.email}!
-        </div>
-
+          <tr>
+            <td style="padding-top:24px;text-align:center;">
+              <div style="
+                background:#0ea5e9;
+                color:white;
+                padding:14px 16px;
+                border-radius:12px;
+                font-size:14px;
+                font-weight:600;
+              ">
+                ¡Gracias por tu compra, ${user.fullName ?? user.email}!
+              </div>
+            </td>
+          </tr>
+        </table>
       </div>
-    </div>
     `;
 
     await this.mailService.send({
@@ -500,6 +481,7 @@ export class OrdersService {
       html,
     });
   }
+
 
 
   private renderAddressBlock(title: string, address?: Record<string, any> | null) {
