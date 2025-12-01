@@ -108,22 +108,18 @@ export class RecipesService {
     const { ingredients: rawIngredients, limit = 10, offset = 0 } = searchRecipesDto;
     const safeLimit = Math.min(Math.max(limit, 1), 100);
     const safeOffset = Math.max(offset ?? 0, 0);
-    const normalized = rawIngredients
-      ?.split(',')
-      .map((name) => name.trim().toLowerCase())
-      .filter((name) => name.length > 0);
 
-    if (!normalized || normalized.length === 0) {
+    const normalizedSegments = this.extractNormalizedSegments(rawIngredients);
+    if (!normalizedSegments.length) {
       return { count: 0, pages: 0, recipes: [] };
     }
 
-    const ingredients = await this.ingredientRepository
-      .createQueryBuilder('ingredient')
-      .where('LOWER(ingredient.name) IN (:...names)', { names: normalized })
-      .getMany();
+    const ingredients = await this.ingredientRepository.find();
+    const matchedIngredients = ingredients.filter((ingredient) =>
+      this.matchesAnySegment(ingredient, normalizedSegments),
+    );
 
-    const ingredientIds = ingredients.map((ingredient) => ingredient.id);
-
+    const ingredientIds = matchedIngredients.map((ingredient) => ingredient.id);
     if (!ingredientIds.length) {
       return { count: 0, pages: 0, recipes: [] };
     }
@@ -219,5 +215,57 @@ export class RecipesService {
       .setParameters({ ingredientIds, ingredientCount: ingredientIds.length })
       .orderBy('recipe.createdAt', 'DESC')
       .getMany();
+  }
+
+  private extractNormalizedSegments(raw?: string) {
+    if (!raw) return [];
+    const segments = raw
+      .split(',')
+      .map((segment) => segment.trim())
+      .filter((segment) => segment.length > 0)
+      .map((segment) => this.normalizeForComparison(this.cleanSegment(segment)))
+      .filter((segment) => segment.length >= 3);
+
+    return Array.from(new Set(segments));
+  }
+
+  private cleanSegment(segment: string) {
+    return segment
+      .replace(/\d+/g, ' ')
+      .replace(/[^\p{L}\s]/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private normalizeForComparison(value: string) {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  private matchesAnySegment(ingredient: Ingredient, segments: string[]) {
+    const normalizedIngredient = this.normalizeForComparison(ingredient.name);
+    const tokens = normalizedIngredient
+      .split(' ')
+      .map((token) => token.trim())
+      .filter((token) => token.length >= 3);
+
+    return segments.some((segment) => {
+      if (segment.includes(normalizedIngredient) || normalizedIngredient.includes(segment)) {
+        return true;
+      }
+
+      if (
+        tokens.some(
+          (token) => token.includes(segment) || segment.includes(token),
+        )
+      ) {
+        return true;
+      }
+
+      return false;
+    });
   }
 }
