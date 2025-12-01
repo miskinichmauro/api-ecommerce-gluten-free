@@ -283,7 +283,7 @@ export const initialRecipes: SeedRecipe[] = [
 
   {
     title: 'Bowl de quinoa asada y vegetales',
-    text: `Lava 1 taza de quinoa y coc?nala en 2 tazas de agua con sal hasta que se vuelva esponjosa; deja reposar 5 minutos. Mezcla 150 g de calabaza, 2 zanahorias y 1 pimiento rojo en cubos con aceite de oliva, ajo picado, sal y pimienta. Asa los vegetales a 220 ?C durante 25 minutos, combina con la quinoa y corona con hojas de espinaca y un chorrito de lim?n.`,
+    text: `Lava 1 taza de quinoa y cocinala en 2 tazas de agua con sal hasta que se vuelva esponjosa; deja reposar 5 minutos. Mezcla 150 g de calabaza, 2 zanahorias y 1 pimiento rojo en cubos con aceite de oliva, ajo picado, sal y pimienta. Asa los vegetales a 220 durante 25 minutos, combina con la quinoa y corona con hojas de espinaca y un chorrito de limón.`,
     ingredientNames: [
       'Quinoa',
       'Calabaza',
@@ -299,7 +299,7 @@ export const initialRecipes: SeedRecipe[] = [
   },
   {
     title: 'Tostadas de aguacate y tomate',
-    text: `Tuesta dos rebanadas de pan sin gluten. Unta cada una con aguacate machacado, cubre con tomates cherry laminados y termina con sal, pimienta y unas gotas de lim?n. A?ade un hilo de aceite de oliva y semillas de ch?a para un extra de textura crujiente.`,
+    text: `Tuesta dos rebanadas de pan sin gluten. Unta cada una con aguacate machacado, cubre con tomates cherry laminados y termina con sal, pimienta y unas gotas de limón. Añade un hilo de aceite de oliva y semillas de chia para un extra de textura crujiente.`,
     ingredientNames: [
       'Pan sin gluten',
       'Aguacate',
@@ -312,8 +312,8 @@ export const initialRecipes: SeedRecipe[] = [
     ],
   },
   {
-    title: 'Smoothie energ?tico de frutos rojos',
-    text: `Combina 1 taza de frutos rojos congelados con 1 banana, 250 ml de leche de almendras y 1 cucharada de miel. Lic?a hasta obtener una mezcla cremosa y agrega 1 cucharadita de ch?a. Sirve fr?o con m?s frutos rojos si quieres un extra de color.`,
+    title: 'Smoothie energético de frutos rojos',
+    text: `Combina 1 taza de frutos rojos congelados con 1 banana, 250 ml de leche de almendras y 1 cucharada de miel. Licua hasta obtener una mezcla cremosa y agrega 1 cucharadita de chia. Sirve frío con más frutos rojos si quieres un extra de color.`,
     ingredientNames: [
       'Frutos rojos',
       'Banana',
@@ -324,7 +324,7 @@ export const initialRecipes: SeedRecipe[] = [
   },
   {
     title: 'Sopa cremosa de calabaza y coco',
-    text: `Saltea media cebolla morada y 2 dientes de ajo en aceite de coco. A?ade 400 g de calabaza picada, cubre con caldo de verduras y cocina 20 minutos. Lic?a con 200 ml de leche de almendras, ajusta sal y pimienta y sirve con un chorrito extra de aceite de coco.`,
+    text: `Saltea media cebolla morada y 2 dientes de ajo en aceite de coco. Añade 400 g de calabaza picada, cubre con caldo de verduras y cocina 20 minutos. Licua con 200 ml de leche de almendras, ajusta sal y pimienta y sirve con un chorrito extra de aceite de coco.`,
     ingredientNames: [
       'Cebolla morada',
       'Ajo',
@@ -338,7 +338,7 @@ export const initialRecipes: SeedRecipe[] = [
   },
   {
     title: 'Muffins de avena, manzana y canela',
-    text: `Mezcla 1 taza de avena molida con 1 cucharadita de canela, 1 cucharadita de polvo de hornear y una pizca de sal. Bate 2 huevos con 1/4 taza de miel, 1/4 taza de aceite de coco y 1 manzana rallada. Integra las preparaciones, hornea a 180 ?C por 20 minutos y deja enfriar antes de servir.`,
+    text: `Mezcla 1 taza de avena molida con 1 cucharadita de canela, 1 cucharadita de polvo de hornear y una pizca de sal. Bate 2 huevos con 1/4 taza de miel, 1/4 taza de aceite de coco y 1 manzana rallada. Integra las preparaciones, hornea a 180 C por 20 minutos y deja enfriar antes de servir.`,
     ingredientNames: [
       'Avena',
       'Manzana',
@@ -352,7 +352,7 @@ export const initialRecipes: SeedRecipe[] = [
   },
   {
     title: 'Crema de garbanzos y espinacas',
-    text: `Procesa 400 g de garbanzos cocidos con 1 taza de espinaca, 1 diente de ajo, 2 cucharadas de aceite de oliva y el jugo de 1 lim?n. Tritura hasta obtener un dip suave, ajusta con sal y pimienta y sirve con m?s aceite de oliva por encima.`,
+    text: `Procesa 400 g de garbanzos cocidos con 1 taza de espinaca, 1 diente de ajo, 2 cucharadas de aceite de oliva y el jugo de 1 limón. Tritura hasta obtener un dip suave, ajusta con sal y pimienta y sirve con más aceite de oliva por encima.`,
     ingredientNames: [
       'Garbanzos',
       'Espinaca',
@@ -365,7 +365,7 @@ export const initialRecipes: SeedRecipe[] = [
   },
   {
     title: 'Crumble de peras y nueces',
-    text: `Mezcla 3 peras cortadas en cubos con 1 cucharada de miel, canela y unas gotas de lim?n. En otra fuente combina 1 taza de harina de almendra, 1/2 taza de nueces picadas y 2 cucharadas de aceite de coco. Cubre las peras y hornea a 180 ?C por 25 minutos hasta que la capa est? dorada.`,
+    text: `Mezcla 3 peras cortadas en cubos con 1 cucharada de miel, canela y unas gotas de limón. En otra fuente combina 1 taza de harina de almendra, 1/2 taza de nueces picadas y 2 cucharadas de aceite de coco. Cubre las peras y hornea a 180 C por 25 minutos hasta que la capa está dorada.`,
     ingredientNames: [
       'Peras',
       'Harina de almendra',
