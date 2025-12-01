@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entities/user.entity';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { Repository } from 'typeorm';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
@@ -16,10 +17,14 @@ export class AddressesService {
     private readonly orderRepository: Repository<Order>,
   ) {}
 
-  async findAll(user: User) {
+  async findAll(user: User, paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto;
+
     return this.addressRepository.find({
       where: { user: { id: user.id } },
       order: { isDefault: 'DESC', createdAt: 'DESC' },
+      take: limit,
+      skip: offset,
     });
   }
 

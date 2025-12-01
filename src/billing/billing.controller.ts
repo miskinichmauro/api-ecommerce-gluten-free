@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth, GetUser } from 'src/auth/decorators';
 import { User } from 'src/auth/entities/user.entity';
 import { BillingService } from './billing.service';
 import { CreateBillingProfileDto } from './dto/create-billing-profile.dto';
 import { UpdateBillingProfileDto } from './dto/update-billing-profile.dto';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @ApiTags('Account - Facturacion')
 @Controller('account/billing')
@@ -14,8 +15,8 @@ export class BillingController {
 
   @Get()
   @ApiOperation({ summary: 'Lista los datos de facturacion del usuario' })
-  findAll(@GetUser() user: User) {
-    return this.billingService.findAll(user);
+  findAll(@GetUser() user: User, @Query() paginationDto: PaginationDto) {
+    return this.billingService.findAll(user, paginationDto);
   }
 
   @Post()

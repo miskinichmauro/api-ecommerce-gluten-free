@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Auth, GetUser } from 'src/auth/decorators';
 import { User } from 'src/auth/entities/user.entity';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { AddressesService } from './addresses.service';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @ApiTags('Account - Direcciones')
 @Controller('account/addresses')
@@ -14,8 +15,8 @@ export class AddressesController {
 
   @Get()
   @ApiOperation({ summary: 'Lista las direcciones del usuario' })
-  findAll(@GetUser() user: User) {
-    return this.addressesService.findAll(user);
+  findAll(@GetUser() user: User, @Query() paginationDto: PaginationDto) {
+    return this.addressesService.findAll(user, paginationDto);
   }
 
   @Post()
