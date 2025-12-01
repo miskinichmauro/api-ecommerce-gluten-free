@@ -12,7 +12,7 @@ import { Ingredient } from 'src/ingredients/entities/ingredient.entity';
 import { RecipeIngredient } from './entities/recipe-ingredient.entity';
 import { SearchRecipesDto } from './dto/search-recipes.dto';
 
-type RankedRecipe = Recipe & { matchCount: number };
+type RankedRecipe = Recipe & { matchCount: number; matchedIngredientNames: string[] };
 type RawMatch = { id: string; matchCount: string | number };
 
 @Injectable()
@@ -124,10 +124,18 @@ export class RecipesService {
       return { count: 0, pages: 0, recipes: [] };
     }
 
+    const matchedIngredientNameById = new Map(
+      matchedIngredients.map((ingredient) => [ingredient.id, ingredient.name]),
+    );
+
     const fullMatches = await this.findRecipesMatchingAll(ingredientIds);
     const fullMatchesWithCount: RankedRecipe[] = fullMatches.map((recipe) => ({
       ...recipe,
       matchCount: ingredientIds.length,
+      matchedIngredientNames: this.buildMatchedIngredientNames(
+        recipe,
+        matchedIngredientNameById,
+      ),
     }));
     const fullMatchIds = new Set(fullMatches.map((recipe) => recipe.id));
 
@@ -167,6 +175,10 @@ export class RecipesService {
       .map((recipe) => ({
         ...recipe,
         matchCount: matchCountMap.get(recipe.id) ?? 0,
+        matchedIngredientNames: this.buildMatchedIngredientNames(
+          recipe,
+          matchedIngredientNameById,
+        ),
       }))
       .sort((a, b) => (b.matchCount ?? 0) - (a.matchCount ?? 0));
 
@@ -267,5 +279,17 @@ export class RecipesService {
 
       return false;
     });
+  }
+
+  private buildMatchedIngredientNames(
+    recipe: Recipe,
+    matchedIngredients: Map<string, string>,
+  ) {
+    const names =
+      recipe.recipeIngredients
+        ?.map((ri) => matchedIngredients.get(ri.ingredientId))
+        .filter((name): name is string => typeof name === 'string') ?? [];
+
+    return Array.from(new Set(names));
   }
 }
