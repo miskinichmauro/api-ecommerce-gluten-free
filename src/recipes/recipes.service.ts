@@ -129,9 +129,9 @@ export class RecipesService {
       return { count: 0, pages: 0, recipes: [] };
     }
 
-    const textMatchExpr = `MAX(CASE WHEN recipe.text ILIKE ANY (:patterns) THEN 1 ELSE 0 END)`;
-    const titleMatchExpr = `MAX(CASE WHEN recipe.title ILIKE ANY (:patterns) THEN 1 ELSE 0 END)`;
-    const ingredientMatchExpr = `COUNT(DISTINCT CASE WHEN ingredient.name ILIKE ANY (:patterns) THEN ingredient.id END)`;
+    const textMatchExpr = `MAX(CASE WHEN unaccent(recipe.text) ILIKE ANY (:patterns) THEN 1 ELSE 0 END)`;
+    const titleMatchExpr = `MAX(CASE WHEN unaccent(recipe.title) ILIKE ANY (:patterns) THEN 1 ELSE 0 END)`;
+    const ingredientMatchExpr = `COUNT(DISTINCT CASE WHEN unaccent(ingredient.name) ILIKE ANY (:patterns) THEN ingredient.id END)`;
     const matchCountExpr = `${textMatchExpr} + ${titleMatchExpr} + ${ingredientMatchExpr}`;
 
     const matchQuery = this.recipeRepository
@@ -203,9 +203,9 @@ export class RecipesService {
   ): SelectQueryBuilder<Recipe> {
     return qb.where(
       new Brackets((qb) => {
-        qb.where('recipe.text ILIKE ANY (:patterns)')
-          .orWhere('recipe.title ILIKE ANY (:patterns)')
-          .orWhere('ingredient.name ILIKE ANY (:patterns)');
+        qb.where('unaccent(recipe.text) ILIKE ANY (:patterns)')
+          .orWhere('unaccent(recipe.title) ILIKE ANY (:patterns)')
+          .orWhere('unaccent(ingredient.name) ILIKE ANY (:patterns)');
       }),
     );
   }
