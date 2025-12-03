@@ -23,9 +23,9 @@ export class RecipesController {
   }
 
   @Get('search')
-  @ApiOperation({ summary: 'Busca recetas por ingredientes' })
+  @ApiOperation({ summary: 'Busca recetas con texto e ingredientes' })
   search(@Query() searchRecipesDto: SearchRecipesDto) {
-    return this.recipesService.filterByIngredients(searchRecipesDto);
+    return this.recipesService.searchRecipes(searchRecipesDto);
   }
 
   @Get(':id')

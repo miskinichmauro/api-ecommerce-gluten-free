@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Brackets, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { Recipe } from './entities/recipe.entity';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { UpdateRecipeDto } from './dto/update-recipe.dto';
@@ -13,7 +13,6 @@ import { RecipeIngredient } from './entities/recipe-ingredient.entity';
 import { SearchRecipesDto } from './dto/search-recipes.dto';
 
 type RankedRecipe = Recipe & { matchCount: number; matchedIngredientNames: string[] };
-type RawMatch = { id: string; matchCount: string | number };
 
 @Injectable()
 export class RecipesService {
@@ -104,90 +103,82 @@ export class RecipesService {
     await this.recipeRepository.createQueryBuilder('recipe').delete().where({}).execute();
   }
 
-  async filterByIngredients(searchRecipesDto: SearchRecipesDto) {
-    const { ingredients: rawIngredients, limit = 10, offset = 0 } = searchRecipesDto;
-    const safeLimit = Math.min(Math.max(limit, 1), 100);
+  async searchRecipes(searchRecipesDto: SearchRecipesDto) {
+    const { q, limit = 10, offset = 0 } = searchRecipesDto;
+    const safeLimit = Math.min(Math.max(limit ?? 10, 1), 100);
     const safeOffset = Math.max(offset ?? 0, 0);
 
-    const normalizedSegments = this.extractNormalizedSegments(rawIngredients);
-    if (!normalizedSegments.length) {
+    const searchTerms = this.buildSearchTerms(q);
+    if (!searchTerms.length) {
       return { count: 0, pages: 0, recipes: [] };
     }
 
-    const ingredients = await this.ingredientRepository.find();
-    const matchedIngredients = ingredients.filter((ingredient) =>
-      this.matchesAnySegment(ingredient, normalizedSegments),
-    );
+    const patterns = searchTerms.map((term) => `%${term}%`);
 
-    const ingredientIds = matchedIngredients.map((ingredient) => ingredient.id);
-    if (!ingredientIds.length) {
-      return { count: 0, pages: 0, recipes: [] };
-    }
-
-    const matchedIngredientNameById = new Map(
-      matchedIngredients.map((ingredient) => [ingredient.id, ingredient.name]),
-    );
-
-    const fullMatches = await this.findRecipesMatchingAll(ingredientIds);
-    const fullMatchesWithCount: RankedRecipe[] = fullMatches.map((recipe) => ({
-      ...recipe,
-      matchCount: ingredientIds.length,
-      matchedIngredientNames: this.buildMatchedIngredientNames(
-        recipe,
-        matchedIngredientNameById,
-      ),
-    }));
-    const fullMatchIds = new Set(fullMatches.map((recipe) => recipe.id));
-
-    const partialRaw = await this.recipeRepository
+    const countQuery = this.recipeRepository
       .createQueryBuilder('recipe')
-      .leftJoin(RecipeIngredient, 'ri', 'ri.recipe_id = recipe.id')
-      .where('ri.ingredient_id IN (:...ingredientIds)', { ingredientIds })
-      .select('recipe.id', 'id')
-      .addSelect('COUNT(DISTINCT ri.ingredient_id)', 'matchCount')
-      .groupBy('recipe.id')
-      .orderBy('"matchCount"', 'DESC')
-      .addOrderBy('recipe.createdAt', 'DESC')
-      .getRawMany<RawMatch>();
-
-    const partialIds: string[] = partialRaw
-      .filter((raw) => !fullMatchIds.has(raw.id))
-      .map((raw) => raw.id);
-
-    if (!partialIds.length) {
-      const ordered = [...fullMatchesWithCount];
-      const total = ordered.length;
-      const recipes = ordered.slice(safeOffset, safeOffset + safeLimit);
-      const pages = Math.ceil(total / safeLimit);
-      return { count: total, pages, recipes };
+      .leftJoin('recipe.recipeIngredients', 'ri')
+      .leftJoin('ri.ingredient', 'ingredient');
+    this.applySearchFilters(countQuery);
+    const totalRaw = await countQuery
+      .select('COUNT(DISTINCT recipe.id)', 'total')
+      .setParameter('patterns', patterns)
+      .getRawOne<{ total: string }>();
+    const totalMatches = Number(totalRaw?.total ?? 0);
+    if (!totalMatches) {
+      return { count: 0, pages: 0, recipes: [] };
     }
 
-    const partialRecipes = await this.recipeRepository.find({
-      where: { id: In(partialIds) },
+    const textMatchExpr = `MAX(CASE WHEN recipe.text ILIKE ANY (:patterns) THEN 1 ELSE 0 END)`;
+    const titleMatchExpr = `MAX(CASE WHEN recipe.title ILIKE ANY (:patterns) THEN 1 ELSE 0 END)`;
+    const ingredientMatchExpr = `COUNT(DISTINCT CASE WHEN ingredient.name ILIKE ANY (:patterns) THEN ingredient.id END)`;
+    const matchCountExpr = `${textMatchExpr} + ${titleMatchExpr} + ${ingredientMatchExpr}`;
+
+    const matchQuery = this.recipeRepository
+      .createQueryBuilder('recipe')
+      .leftJoin('recipe.recipeIngredients', 'ri')
+      .leftJoin('ri.ingredient', 'ingredient');
+    this.applySearchFilters(matchQuery);
+
+    const rawMatches = await matchQuery
+      .select('recipe.id', 'id')
+      .addSelect(matchCountExpr, 'matchCount')
+      .groupBy('recipe.id')
+      .orderBy('matchCount', 'DESC')
+      .addOrderBy('recipe.createdAt', 'DESC')
+      .limit(safeLimit)
+      .offset(safeOffset)
+      .setParameter('patterns', patterns)
+      .getRawMany<{ id: string; matchCount: string }>();
+
+    const pages = Math.ceil(totalMatches / safeLimit);
+    if (!rawMatches.length) {
+      return { count: totalMatches, pages, recipes: [] };
+    }
+
+    const recipeIds = rawMatches.map((raw) => raw.id);
+    const recipes = await this.recipeRepository.find({
+      where: { id: In(recipeIds) },
       relations: ['recipeIngredients', 'recipeIngredients.ingredient'],
     });
 
-    const matchCountMap = new Map<string, number>(
-      partialRaw.map((raw) => [raw.id, Number(raw.matchCount)]),
-    );
+    const recipeMap = new Map(recipes.map((recipe) => [recipe.id, recipe]));
+    const orderedRecipes: RankedRecipe[] = rawMatches
+      .map((raw) => {
+        const recipe = recipeMap.get(raw.id);
+        if (!recipe) return null;
+        return {
+          ...recipe,
+          matchCount: Number(raw.matchCount),
+          matchedIngredientNames: this.buildMatchedIngredientNamesForSearch(
+            recipe,
+            searchTerms,
+          ),
+        };
+      })
+      .filter((recipe): recipe is RankedRecipe => Boolean(recipe));
 
-    const partialMatches: RankedRecipe[] = partialRecipes
-      .map((recipe) => ({
-        ...recipe,
-        matchCount: matchCountMap.get(recipe.id) ?? 0,
-        matchedIngredientNames: this.buildMatchedIngredientNames(
-          recipe,
-          matchedIngredientNameById,
-        ),
-      }))
-      .sort((a, b) => (b.matchCount ?? 0) - (a.matchCount ?? 0));
-
-    const ordered: RankedRecipe[] = [...fullMatchesWithCount, ...partialMatches];
-    const total = ordered.length;
-    const recipes = ordered.slice(safeOffset, safeOffset + safeLimit);
-    const pages = Math.ceil(total / safeLimit);
-
-    return { count: total, pages, recipes };
+    return { count: totalMatches, pages, recipes: orderedRecipes };
   }
 
   private async findIngredientsByIds(ingredientIds: string[]) {
@@ -207,38 +198,46 @@ export class RecipesService {
     return found;
   }
 
-  private async findRecipesMatchingAll(ingredientIds: string[]) {
-    const qb = this.recipeRepository
-      .createQueryBuilder('recipe')
-      .leftJoinAndSelect('recipe.recipeIngredients', 'ri')
-      .leftJoinAndSelect('ri.ingredient', 'ingredient');
-
-    const subQuery = qb
-      .subQuery()
-      .select('ri2.recipe_id')
-      .from(RecipeIngredient, 'ri2')
-      .where('ri2.ingredient_id IN (:...ingredientIds)')
-      .groupBy('ri2.recipe_id')
-      .having('COUNT(DISTINCT ri2.ingredient_id) = :ingredientCount')
-      .getQuery();
-
-    return qb
-      .where(`recipe.id IN ${subQuery}`)
-      .setParameters({ ingredientIds, ingredientCount: ingredientIds.length })
-      .orderBy('recipe.createdAt', 'DESC')
-      .getMany();
+  private applySearchFilters(
+    qb: SelectQueryBuilder<Recipe>,
+  ): SelectQueryBuilder<Recipe> {
+    return qb.where(
+      new Brackets((qb) => {
+        qb.where('recipe.text ILIKE ANY (:patterns)')
+          .orWhere('recipe.title ILIKE ANY (:patterns)')
+          .orWhere('ingredient.name ILIKE ANY (:patterns)');
+      }),
+    );
   }
 
-  private extractNormalizedSegments(raw?: string) {
+  private buildSearchTerms(raw?: string) {
     if (!raw) return [];
-    const segments = raw
-      .split(',')
-      .map((segment) => segment.trim())
-      .filter((segment) => segment.length > 0)
-      .map((segment) => this.normalizeForComparison(this.cleanSegment(segment)))
-      .filter((segment) => segment.length >= 3);
+    const cleaned = this.cleanSegment(raw);
+    if (!cleaned) return [];
+    const normalized = this.normalizeForComparison(cleaned);
+    if (!normalized) return [];
+    const terms = normalized
+      .split(/\s+/)
+      .filter((term) => term.length >= 3);
 
-    return Array.from(new Set(segments));
+    return Array.from(new Set(terms));
+  }
+
+  private buildMatchedIngredientNamesForSearch(
+    recipe: Recipe,
+    searchTerms: string[],
+  ) {
+    const matches = new Set<string>();
+    for (const recipeIngredient of recipe.recipeIngredients ?? []) {
+      const ingredientName = recipeIngredient.ingredient?.name;
+      if (!ingredientName) continue;
+      const normalizedIngredient = this.normalizeForComparison(ingredientName);
+      if (searchTerms.some((term) => normalizedIngredient.includes(term))) {
+        matches.add(ingredientName);
+      }
+    }
+
+    return Array.from(matches);
   }
 
   private cleanSegment(segment: string) {
@@ -255,41 +254,5 @@ export class RecipesService {
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .trim();
-  }
-
-  private matchesAnySegment(ingredient: Ingredient, segments: string[]) {
-    const normalizedIngredient = this.normalizeForComparison(ingredient.name);
-    const tokens = normalizedIngredient
-      .split(' ')
-      .map((token) => token.trim())
-      .filter((token) => token.length >= 3);
-
-    return segments.some((segment) => {
-      if (segment.includes(normalizedIngredient) || normalizedIngredient.includes(segment)) {
-        return true;
-      }
-
-      if (
-        tokens.some(
-          (token) => token.includes(segment) || segment.includes(token),
-        )
-      ) {
-        return true;
-      }
-
-      return false;
-    });
-  }
-
-  private buildMatchedIngredientNames(
-    recipe: Recipe,
-    matchedIngredients: Map<string, string>,
-  ) {
-    const names =
-      recipe.recipeIngredients
-        ?.map((ri) => matchedIngredients.get(ri.ingredientId))
-        .filter((name): name is string => typeof name === 'string') ?? [];
-
-    return Array.from(new Set(names));
   }
 }
