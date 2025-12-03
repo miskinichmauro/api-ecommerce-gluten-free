@@ -142,9 +142,9 @@ export class RecipesService {
 
     const rawMatches = await matchQuery
       .select('recipe.id', 'id')
-      .addSelect(matchCountExpr, 'matchCount')
+      .addSelect(matchCountExpr, 'match_count')
       .groupBy('recipe.id')
-      .orderBy('matchCount', 'DESC')
+      .orderBy('match_count', 'DESC')
       .addOrderBy('recipe.createdAt', 'DESC')
       .limit(safeLimit)
       .offset(safeOffset)
