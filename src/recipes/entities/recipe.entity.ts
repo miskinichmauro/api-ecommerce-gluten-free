@@ -16,9 +16,6 @@ export class Recipe {
   @Column('text')
   title: string;
 
-  @Column('text', { nullable: true })
-  description?: string;
-
   @Column('text')
   text: string;
 
